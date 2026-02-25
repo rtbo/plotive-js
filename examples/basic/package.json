@@ -1,0 +1,18 @@
+{
+  "name": "plotive-js-example-basic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "plotive": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
