@@ -10,9 +10,9 @@
     "build:ts": "tsc",
     "build": "pnpm run build:wasm && pnpm run build:ts",
     "dev": "vite",
-    "example:install": "pnpm --dir examples/basic install",
-    "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir examples/basic run dev",
-    "example:build": "pnpm run build && pnpm run example:install && pnpm --dir examples/basic run build"
+    "example:install": "pnpm --dir examples/sine install",
+    "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run dev",
+    "example:build": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run build"
   },
   "main": "src/index.ts",
   "dependencies": {

@@ -20,4 +20,7 @@ export default defineConfig({
       allow: [repoRoot],
     },
   },
+  define: {
+    global: 'window',
+  }
 });
