@@ -26,7 +26,7 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn render_figure(fig: JsValue) -> Result<String, JsValue> {
+pub fn render_to_svg_string(fig: JsValue) -> Result<String, JsValue> {
     let fig = js_fig::extract_figure(&fig)?;
     let mut surf = plotive_svg::SvgSurface::new(800, 600);
     let fig = fig.prepare(&(), None).map_err(|e| JsValue::from_str(&e.to_string()))?;
@@ -35,6 +35,18 @@ pub fn render_figure(fig: JsValue) -> Result<String, JsValue> {
     surf.write(&mut svg_str).map_err(|e| JsValue::from_str(&e.to_string()))?;
     let svg_str = String::from_utf8(svg_str).map_err(|e| JsValue::from_str(&e.to_string()))?;
     Ok(svg_str)
+}
+
+#[wasm_bindgen]
+pub fn render_to_png_data_url(fig: JsValue) -> Result<String, JsValue> {
+    use base64::prelude::*;
+
+    let fig = js_fig::extract_figure(&fig)?;
+    let mut surf = plotive_pxl::PxlSurface::new(800, 600).unwrap();
+    let fig = fig.prepare(&(), None).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    fig.draw(&mut surf, &Default::default());
+    let png_data = surf.into_pixmap().encode_png().map_err(|e| JsValue::from_str(&e.to_string()))?;
+    Ok(format!("data:image/png;base64,{}", BASE64_STANDARD.encode(&png_data)))
 }
 
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {

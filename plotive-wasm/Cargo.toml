@@ -11,6 +11,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+base64 = "0.22.1"
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
@@ -25,9 +26,11 @@ plotive = { version = "0.3.0", features = [
     "noto-serif-italic",
     "time"
 ] }
+plotive-pxl = "0.3.0"
 plotive-svg = "0.3.0"
 plotive-text = "0.3.0"
 wasm-bindgen = "0.2.84"
+web-sys = { version = "0.3.91", features = ["console"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

@@ -1,11 +1,18 @@
-import { render } from 'plotive';
+import { renderAsSvg, renderToImg } from 'plotive';
 
 const figDiv = document.getElementById("figdiv");
-if (!(figDiv instanceof HTMLDivElement)) {
-  throw new Error('Missing #figdiv element');
-}
+const figImg = document.getElementById("figImg");
 
-render({
+if (!(figDiv instanceof HTMLDivElement)) {
+  throw new Error('Missing #figDiv element');
+}
+if (!(figImg instanceof HTMLImageElement)) {
+  throw new Error('Missing #figImg element');
+}
+console.log(figDiv);
+console.log(figImg);
+
+const fig = {
   title: "Example plot",
   plot: {
     series: [
@@ -16,4 +23,8 @@ render({
       }
     ]
   }
-}, figDiv);
+};
+
+await renderToImg(fig, figImg);
+await renderAsSvg(fig, figDiv);
+

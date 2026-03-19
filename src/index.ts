@@ -1,4 +1,4 @@
-import init, { render_figure, set_panic_hook } from 'plotive-wasm'
+import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } from 'plotive-wasm'
 import { ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
@@ -84,12 +84,22 @@ export type Figure = FigureBase & (
 
 var initDone = false;
 
-export async function render(fig: Figure, elem: Element) {
+async function initOnce() {
     if (!initDone) {
         initDone = true;
         await init();
         set_panic_hook();
     }
-    let markup = render_figure(fig);
-    elem.innerHTML = markup;
+}
+
+export async function renderAsSvg(fig: Figure, elem: Element) {
+    await initOnce();
+    let svg = render_to_svg_string(fig);
+    elem.innerHTML = svg;
+}
+
+export async function renderToImg(fig: Figure, elem: HTMLImageElement) {
+    await initOnce();
+    let data = render_to_png_data_url(fig);
+    elem.src = data;
 }
