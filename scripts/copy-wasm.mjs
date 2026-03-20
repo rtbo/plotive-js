@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(scriptDir, '..');
 const sourceDir = resolve(rootDir, 'src/wasm');
-const targetDir = resolve(rootDir, 'dist/wasm');
+const targetDir = resolve(rootDir, 'dist/esm/wasm');
 
 if (!existsSync(sourceDir)) {
     throw new Error(`WASM output directory not found: ${sourceDir}. Run \"pnpm run build:wasm\" first.`);

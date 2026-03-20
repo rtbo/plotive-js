@@ -1,4 +1,3 @@
 node_modules/
 dist/
-src/wasm/,
-plotive-wasm/pkg-node/
+src/wasm*/

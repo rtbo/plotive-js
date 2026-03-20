@@ -1,19 +1,21 @@
 {
   "name": "plotive",
   "version": "0.1.1",
-  "type": "module",
   "keywords": ["plotting", "visualization", "charts", "graphs"],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
   "scripts": {
     "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../plotive-wasm/pkg-node",
+    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../src/wasm-node",
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
-    "build:ts": "tsc",
+    "build:ts:esm": "tsc -p tsconfig.esm.json",
+    "build:ts:cjs": "tsc -p tsconfig.cjs.json",
+    "build:ts": "pnpm run build:ts:esm && pnpm run build:ts:cjs",
+    "clean:dist": "node scripts/clean-dist.mjs",
     "copy:wasm": "node scripts/copy-wasm.mjs",
     "copy:wasm:node": "node scripts/copy-wasm-node.mjs",
-    "copy:cjs": "node scripts/copy-cjs-entry.mjs",
-    "build": "pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run copy:cjs",
+    "rename:esm": "node scripts/rename-esm-to-mjs.mjs",
+    "build": "pnpm run clean:dist && pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run rename:esm",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
@@ -21,14 +23,13 @@
     "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run dev",
     "example:build": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run build"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs"
     }
   },
   "files": [
