@@ -6,10 +6,14 @@
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
   "scripts": {
-    "build:wasm": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
+    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
+    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../plotive-wasm/pkg-node",
+    "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:ts": "tsc",
     "copy:wasm": "node scripts/copy-wasm.mjs",
-    "build": "pnpm run build:wasm && pnpm run build:ts && pnpm run copy:wasm",
+    "copy:wasm:node": "node scripts/copy-wasm-node.mjs",
+    "copy:cjs": "node scripts/copy-cjs-entry.mjs",
+    "build": "pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run copy:cjs",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
@@ -17,12 +21,14 @@
     "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run dev",
     "example:build": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run build"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
