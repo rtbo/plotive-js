@@ -1,4 +1,4 @@
-import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } from 'plotive-wasm'
+import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } from './wasm/plotive_wasm.js'
 import { ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
@@ -98,8 +98,18 @@ export async function renderAsSvg(fig: Figure, elem: Element) {
     elem.innerHTML = svg;
 }
 
+export async function renderToSvgString(fig: Figure): Promise<string> {
+    await initOnce();
+    return render_to_svg_string(fig);
+}
+
 export async function renderToImg(fig: Figure, elem: HTMLImageElement) {
     await initOnce();
     let data = render_to_png_data_url(fig);
     elem.src = data;
+}
+
+export async function renderToPngDataUrl(fig: Figure): Promise<string> {
+    await initOnce();
+    return render_to_png_data_url(fig);
 }
