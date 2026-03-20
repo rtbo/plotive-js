@@ -98,7 +98,7 @@ fn extract_line_annot(js_annot: &JsValue) -> Result<des::annot::Line, JsValue> {
 
     if let Some(js_stroke) = get_prop_if_defined(js_annot, "stroke") {
         let stroke = extract_theme_stroke(&js_stroke)?;
-        line = line.with_line(stroke);
+        line = line.with_stroke(stroke);
     }
 
     if let Some(js_pattern) = get_prop_if_defined(js_annot, "pattern") {
@@ -120,7 +120,7 @@ fn extract_arrow_annot(js_annot: &JsValue) -> Result<des::annot::Arrow, JsValue>
     }
     if let Some(js_stroke) = get_prop_if_defined(js_annot, "stroke") {
         let stroke = extract_theme_stroke(&js_stroke)?;
-        arrow = arrow.with_line(stroke);
+        arrow = arrow.with_stroke(stroke);
     }
     Ok(arrow)
 }

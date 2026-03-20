@@ -10,7 +10,7 @@ importers:
     dependencies:
       plotive:
         specifier: file:../..
-        version: plotive-js@file:../..
+        version: file:../..
     devDependencies:
       '@types/node':
         specifier: ^24.6.1
@@ -355,11 +355,8 @@ packages:
     resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
     engines: {node: '>=12'}
 
-  plotive-js@file:../..:
+  plotive@file:../..:
     resolution: {directory: ../.., type: directory}
-
-  plotive-wasm@file:../../plotive-wasm/pkg:
-    resolution: {directory: ../../plotive-wasm/pkg, type: directory}
 
   postcss@8.5.6:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
@@ -629,11 +626,7 @@ snapshots:
 
   picomatch@4.0.3: {}
 
-  plotive-js@file:../..:
-    dependencies:
-      plotive-wasm: file:../../plotive-wasm/pkg
-
-  plotive-wasm@file:../../plotive-wasm/pkg: {}
+  plotive@file:../..: {}
 
   postcss@8.5.6:
     dependencies:

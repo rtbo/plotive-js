@@ -5,8 +5,8 @@
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
   "scripts": {
-    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../src/wasm-node",
+    "build:wasm:web": "wasm-pack build --dev plotive-wasm --target web --out-dir ../src/wasm",
+    "build:wasm:node": "wasm-pack build --dev plotive-wasm --target nodejs --out-dir ../src/wasm-node",
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:ts:esm": "tsc -p tsconfig.esm.json",
     "build:ts:cjs": "tsc -p tsconfig.cjs.json",
@@ -19,9 +19,12 @@
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
-    "example:install": "pnpm --dir examples/sine install",
-    "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run dev",
-    "example:build": "pnpm run build && pnpm run example:install && pnpm --dir examples/sine run build"
+    "example:sine:install": "pnpm --dir examples/sine install",
+    "example:sine:dev": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run dev",
+    "example:sine:build": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run build",
+    "example:multiple-axes:install": "pnpm --dir examples/multiple-axes install",
+    "example:multiple-axes:dev": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run dev",
+    "example:multiple-axes:build": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run build"
   },
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.mjs",

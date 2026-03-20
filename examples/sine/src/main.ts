@@ -9,22 +9,29 @@ if (!(figDiv instanceof HTMLDivElement)) {
 if (!(figImg instanceof HTMLImageElement)) {
   throw new Error('Missing #figImg element');
 }
-console.log(figDiv);
-console.log(figImg);
+
+const x = Array.from({ length: 500 }, (_, i) => i / 499 * 2 * Math.PI);
+const y = x.map(x => Math.sin(x));
 
 const fig = {
-  title: "Example plot",
   plot: {
     series: [
       {
         type: "line",
-        x: [1, 2, 3, 4, 5],
-        y: [1, 4, 9, 16, 25],
-      }
+        x: x,
+        y: y,
+      },
     ]
   }
 };
 
-await renderToImg(fig, figImg);
-await renderAsSvg(fig, figDiv);
+await renderAsSvg({
+  title: "Sine wave rendered to SVG",
+  ...fig
+}, figDiv);
 
+
+await renderToImg({
+  title: "Sine wave rendered to PNG",
+  ...fig
+}, figImg);

@@ -18,7 +18,7 @@ base64 = "0.22.1"
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
 js-sys = "0.3.91"
-plotive = { version = "0.3.0", features = [
+plotive = { path = "../../plotive", features = [
     "noto-mono",
     "noto-sans",
     "noto-sans-italic",
@@ -26,9 +26,9 @@ plotive = { version = "0.3.0", features = [
     "noto-serif-italic",
     "time"
 ] }
-plotive-pxl = "0.3.0"
-plotive-svg = "0.3.0"
-plotive-text = "0.3.0"
+plotive-pxl = { path = "../../plotive/pxl" }
+plotive-svg = { path = "../../plotive/svg" }
+plotive-text = { path = "../../plotive/text" }
 wasm-bindgen = "0.2.84"
 web-sys = { version = "0.3.91", features = ["console"] }
 
