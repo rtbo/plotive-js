@@ -34,9 +34,6 @@ const fig = {
     ],
     x_axis: {
       title: 'X',
-      scale: {
-        type: 'lin',
-      },
       ticks: {
         locator: {
           type: 'pimultiple',
@@ -49,17 +46,11 @@ const fig = {
     y_axes: [
       {
         title: 'Y1',
-        scale: {
-          type: 'auto',
-        },
         ticks: {},
       },
       {
         title: 'Y2',
         side: 'right',
-        scale: {
-          type: 'auto',
-        },
         ticks: {
           locator: {
             type: 'auto',

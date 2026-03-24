@@ -17,9 +17,35 @@ pub fn extract_ref(js_ref: &JsValue) -> Result<des::axis::Ref, JsValue> {
 }
 
 pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
-    let js_scale = get_prop_if_defined(js_axis, "scale").unwrap_or(JsValue::from_str("auto"));
-
-    let mut axis = des::Axis::new().with_scale(extract_scale(&js_scale)?);
+    let mut axis = des::Axis::new();
+    
+    if let Some(js_scale) = get_prop_if_defined(js_axis, "scale") {
+        if let Some(typ) = js_scale.as_string() {
+            match typ.as_str() {
+                "auto" => {
+                    axis = axis.with_scale(des::axis::Scale::Auto);
+                },
+                "lin" => {
+                    axis = axis.with_scale(des::axis::Range::default().into());
+                },
+                "log" => {
+                    axis = axis.with_scale(des::axis::LogScale::default().into());
+                }
+                "shared" => {
+                    return Err(JsValue::from_str(
+                        "Shared scale requires a 'ref' property. Please provide an object with 'type' and 'ref' properties.",
+                    ));
+                }
+                _ => {
+                    return Err(JsValue::from_str(&format!(
+                        "Unsupported scale type: {}",
+                        typ
+                    )));
+                }
+            }
+        }
+        axis = axis.with_scale(extract_scale(&js_scale)?);
+    }
 
     if let Some(js_title) = get_prop_if_defined(js_axis, "title") {
         let title = js_title
