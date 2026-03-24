@@ -18,16 +18,16 @@ pub fn extract_ref(js_ref: &JsValue) -> Result<des::axis::Ref, JsValue> {
 
 pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
     let mut axis = des::Axis::new();
-    
+
     if let Some(js_scale) = get_prop_if_defined(js_axis, "scale") {
         if let Some(typ) = js_scale.as_string() {
             match typ.as_str() {
                 "auto" => {
                     axis = axis.with_scale(des::axis::Scale::Auto);
-                },
+                }
                 "lin" => {
                     axis = axis.with_scale(des::axis::Range::default().into());
-                },
+                }
                 "log" => {
                     axis = axis.with_scale(des::axis::LogScale::default().into());
                 }
@@ -43,8 +43,9 @@ pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
                     )));
                 }
             }
+        } else {
+            axis = axis.with_scale(extract_scale(&js_scale)?);
         }
-        axis = axis.with_scale(extract_scale(&js_scale)?);
     }
 
     if let Some(js_title) = get_prop_if_defined(js_axis, "title") {
@@ -191,7 +192,29 @@ where
     }
 }
 
+fn extract_ticks_locator_from_str(str: &str) -> Result<des::axis::ticks::Locator, JsValue> {
+    match str {
+        "auto" => Ok(des::axis::ticks::Locator::Auto),
+        "maxn" => Ok(des::axis::ticks::MaxNLocator {
+            bins: 10,
+            steps: vec![1.0, 2.0, 5.0],
+        }
+        .into()),
+        "pimultiple" => Ok(des::axis::ticks::PiMultipleLocator { bins: 10 }.into()),
+        "log" => Ok(des::axis::ticks::LogLocator { base: 10.0 }.into()),
+        "datetime" => Ok(des::axis::ticks::DateTimeLocator::Auto.into()),
+        "timedelta" => Ok(des::axis::ticks::TimeDeltaLocator::Auto.into()),
+        _ => Err(JsValue::from_str(&format!(
+            "Unsupported ticks locator type: {}",
+            str
+        ))),
+    }
+}
+
 fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locator, JsValue> {
+    if let Some(str) = js_locator.as_string() {
+        return extract_ticks_locator_from_str(&str);
+    }
     let typ_name = extract_type(js_locator)?;
     match typ_name.as_str() {
         "auto" => Ok(des::axis::ticks::Locator::Auto),
@@ -295,9 +318,7 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
     }
 }
 
-fn extract_ticks_formatter(
-    js_formatter: &JsValue,
-) -> Result<des::axis::ticks::Formatter, JsValue> {
+fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::Formatter, JsValue> {
     let typ_name = extract_type(js_formatter)?;
     match typ_name.as_str() {
         "auto" => Ok(des::axis::ticks::Formatter::Auto),
@@ -307,22 +328,24 @@ fn extract_ticks_formatter(
                 .unwrap_or_else(|| JsValue::from_f64(2.0))
                 .as_f64()
                 .ok_or_else(|| JsValue::from_str("'precision' property must be a number"))?
-                as usize
+                as usize,
         )),
         "percent" => Ok(des::axis::ticks::PercentFormatter {
             decimal_places: get_prop_if_defined(js_formatter, "decimals")
-                .map(|d| d.as_f64().ok_or_else(|| {
-                    JsValue::from_str("'decimals' property must be a number")
-                }))
+                .map(|d| {
+                    d.as_f64()
+                        .ok_or_else(|| JsValue::from_str("'decimals' property must be a number"))
+                })
                 .transpose()?
-                .map(|d| d as usize)
+                .map(|d| d as usize),
         }
         .into()),
         "datetime" | "date" | "time" => {
             let fmt: Option<String> = get_prop_if_defined(js_formatter, "fmt")
-                .map(|f| f.as_string().ok_or_else(|| {
-                    JsValue::from_str("'fmt' property must be a string")
-                }))
+                .map(|f| {
+                    f.as_string()
+                        .ok_or_else(|| JsValue::from_str("'fmt' property must be a string"))
+                })
                 .transpose()?;
             let formatter = match (fmt, typ_name.as_str()) {
                 (Some(f), _) => des::axis::ticks::DateTimeFormatter::Custom(f),
@@ -335,9 +358,10 @@ fn extract_ticks_formatter(
         }
         "timedelta" => {
             let fmt: Option<String> = get_prop_if_defined(js_formatter, "fmt")
-                .map(|f| f.as_string().ok_or_else(|| {
-                    JsValue::from_str("'fmt' property must be a string")
-                }))
+                .map(|f| {
+                    f.as_string()
+                        .ok_or_else(|| JsValue::from_str("'fmt' property must be a string"))
+                })
                 .transpose()?;
             let formatter = fmt
                 .map(|f| des::axis::ticks::TimeDeltaFormatter::Custom(f))
@@ -353,6 +377,18 @@ fn extract_ticks_formatter(
 
 fn extract_ticks(js_ticks: &JsValue) -> Result<des::axis::Ticks, JsValue> {
     let mut ticks = des::axis::Ticks::default();
+    if let Some(js_ticks) = js_ticks.as_string() {
+        match js_ticks.as_str() {
+            "percent" => {
+                ticks = ticks
+                    .with_formatter(Some(des::axis::ticks::PercentFormatter::default().into()));
+            }
+            _ => {
+                ticks = ticks.with_locator(extract_ticks_locator_from_str(&js_ticks)?);
+            }
+        }
+        return Ok(ticks);
+    }
     if let Some(js_locator) = get_prop_if_defined(js_ticks, "locator") {
         let locator = extract_ticks_locator(&js_locator)?;
         ticks = ticks.with_locator(locator);

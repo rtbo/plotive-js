@@ -34,31 +34,17 @@ const fig = {
     ],
     x_axis: {
       title: 'X',
-      ticks: {
-        locator: {
-          type: 'pimultiple',
-        },
-        formatter: {
-          type: 'auto',
-        }
-      },
+      ticks: 'pimultiple',
     },
     y_axes: [
       {
         title: 'Y1',
-        ticks: {},
+        ticks: 'auto',
       },
       {
         title: 'Y2',
         side: 'right',
-        ticks: {
-          locator: {
-            type: 'auto',
-          },
-          formatter: {
-            type: 'percent',
-          }
-        },
+        ticks: 'percent',
       }
     ],
   },
