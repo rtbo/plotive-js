@@ -33,6 +33,7 @@ export interface Legend<Pos> {
     spacing?: number | [number, number];
 }
 
+// Runtime accepts either a full legend object or a shorthand position string.
 export type FigLegend = Legend<FigLegendPos>;
 export type PlotLegend = Legend<PlotLegendPos>;
 
@@ -42,7 +43,7 @@ interface PlotBase {
     series: Series[];
     title?: string;
     subplot?: [number, number];
-    legend?: PlotLegend;
+    legend?: PlotLegendPos | PlotLegend;
     annotations?: Annotation[];
 }
 
@@ -92,7 +93,7 @@ async function initOnce() {
     }
 }
 
-export async function renderAsSvg(fig: Figure, elem: Element) {
+export async function renderAsSvg(elem: Element, fig: Figure) {
     await initOnce();
     let svg = render_to_svg_string(fig);
     elem.innerHTML = svg;
@@ -103,7 +104,7 @@ export async function renderToSvgString(fig: Figure): Promise<string> {
     return render_to_svg_string(fig);
 }
 
-export async function renderToImg(fig: Figure, elem: HTMLImageElement) {
+export async function renderToImg(elem: HTMLImageElement, fig: Figure) {
     await initOnce();
     let data = render_to_png_data_url(fig);
     elem.src = data;

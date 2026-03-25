@@ -10,7 +10,7 @@ const x = Array.from({ length: 500 }, (_, i) => i / 499 * Math.PI);
 const y1 = x.map(x => 1000 * Math.sin(x));
 const y2 = x.map(x => Math.sin(x) - 0.8 * Math.sin(x) ** 2)
 
-const fig = {
+await renderAsSvg(figDiv, {
   title: "Example plot",
   legend: 'top',
   plot: {
@@ -20,14 +20,14 @@ const fig = {
         name: '1000 * sin(x)',
         x: x,
         y: y1,
-        y_axis: 0,
+        y_axis: 'y1',
       },
       {
-        type: "line", 
+        type: "line",
         name: 'sin(x) - 0.8*sin(x)^2',
         x: x,
         y: y2,
-        y_axis: 1,
+        y_axis: 'y2',
       }
     ],
     x_axis: {
@@ -36,17 +36,17 @@ const fig = {
     },
     y_axes: [
       {
+        id: 'y1',
         title: 'Y1',
         ticks: 'auto',
       },
       {
+        id: 'y2',
         title: 'Y2',
         side: 'right',
         ticks: 'percent',
       }
     ],
   },
-};
-
-await renderAsSvg(fig, figDiv);
+});
 

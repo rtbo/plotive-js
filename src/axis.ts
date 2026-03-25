@@ -117,7 +117,7 @@ export interface Axis {
     id?: string;
     scale?: Scale;
     side?: "top" | "right" | "bottom" | "left";
-    ticks?: Ticks | TicksLocator;
+    ticks?: Ticks | TicksLocator | TicksFormatterType;
     grid?: "default" | ThemeStroke;
     minor_ticks?: Ticks | TicksLocator;
     minor_grid?: "default" | ThemeStroke;
