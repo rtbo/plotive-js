@@ -187,22 +187,22 @@ fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
         plot = plot.with_title(title.into());
     }
 
-    if let Some(js_axis) = get_prop_if_defined(js_plot, "x_axis") {
+    if let Some(js_axis) = get_prop_if_defined(js_plot, "xAxis") {
         let axis = js_axis::extract_axis(&js_axis)?;
         plot = plot.with_x_axis(axis);
     }
-    if let Some(js_axis) = get_prop_if_defined(js_plot, "y_axis") {
+    if let Some(js_axis) = get_prop_if_defined(js_plot, "yAxis") {
         let axis = js_axis::extract_axis(&js_axis)?;
         plot = plot.with_y_axis(axis);
     }
-    if let Some(js_axes) = get_prop_if_defined(js_plot, "x_axes") {
+    if let Some(js_axes) = get_prop_if_defined(js_plot, "xAxes") {
         let js_axes = js_sys::Array::from(&js_axes);
         for js_axis in js_axes.iter() {
             let axis = js_axis::extract_axis(&js_axis)?;
             plot = plot.with_x_axis(axis);
         }
     }
-    if let Some(js_axes) = get_prop_if_defined(js_plot, "y_axes") {
+    if let Some(js_axes) = get_prop_if_defined(js_plot, "yAxes") {
         let js_axes = js_sys::Array::from(&js_axes);
         for js_axis in js_axes.iter() {
             let axis = js_axis::extract_axis(&js_axis)?;

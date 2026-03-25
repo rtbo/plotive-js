@@ -87,13 +87,13 @@ pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
         axis = axis.with_grid(stroke.into());
     }
 
-    if let Some(js_minor_ticks) = get_prop_if_defined(js_axis, "minor_ticks") {
+    if let Some(js_minor_ticks) = get_prop_if_defined(js_axis, "minorTicks") {
         let locator = extract_ticks_locator(&js_minor_ticks)?;
         let minor_ticks = des::axis::MinorTicks::new().with_locator(locator);
         axis = axis.with_minor_ticks(minor_ticks);
     }
 
-    if let Some(js_minor_grid) = get_prop_if_defined(js_axis, "minor_grid") {
+    if let Some(js_minor_grid) = get_prop_if_defined(js_axis, "minorGrid") {
         let stroke = js_style::extract_theme_stroke(&js_minor_grid)?;
         axis = axis.with_minor_grid(stroke.into());
     }

@@ -1,6 +1,6 @@
 {
   "name": "plotive",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "keywords": ["plotting", "visualization", "charts", "graphs"],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",

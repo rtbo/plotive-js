@@ -75,11 +75,11 @@ fn extract_line_series(js_ser: &JsValue) -> Result<des::series::Line, JsValue> {
             .ok_or_else(|| JsValue::from_str("'name' property must be a string"))?;
         line = line.with_name(name);
     }
-    if let Some(js_x_axis) = get_prop_if_defined(js_ser, "x_axis") {
+    if let Some(js_x_axis) = get_prop_if_defined(js_ser, "xAxis") {
         let x_axis = js_axis::extract_ref(&js_x_axis)?;
         line = line.with_x_axis(x_axis);
     }
-    if let Some(js_y_axis) = get_prop_if_defined(js_ser, "y_axis") {
+    if let Some(js_y_axis) = get_prop_if_defined(js_ser, "yAxis") {
         let y_axis = js_axis::extract_ref(&js_y_axis)?;
         line = line.with_y_axis(y_axis);
     }

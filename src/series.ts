@@ -7,8 +7,8 @@ export type DataCol =
 
 interface SeriesBase {
     name?: string;
-    x_axis?: axis.Ref;
-    y_axis?: axis.Ref;
+    xAxis?: axis.Ref;
+    yAxis?: axis.Ref;
 }
 
 export type Interpolation =

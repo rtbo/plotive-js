@@ -20,21 +20,21 @@ await renderAsSvg(figDiv, {
         name: '1000 * sin(x)',
         x: x,
         y: y1,
-        y_axis: 'y1',
+        yAxis: 'y1',
       },
       {
         type: "line",
         name: 'sin(x) - 0.8*sin(x)^2',
         x: x,
         y: y2,
-        y_axis: 'y2',
+        yAxis: 'y2',
       }
     ],
-    x_axis: {
+    xAxis: {
       title: 'X',
       ticks: 'pimultiple',
     },
-    y_axes: [
+    yAxes: [
       {
         id: 'y1',
         title: 'Y1',

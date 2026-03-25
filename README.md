@@ -152,21 +152,21 @@ const fig = {
         name: "1000 * sin(x)",
         x: x,
         y: y1,
-        y_axis: 0,
+        yAxis: 0,
       },
       {
         type: "line",
         name: "sin(x) - 0.8*sin(x)²",
         x: x,
         y: y2,
-        y_axis: 1,
+        yAxis: 1,
       }
     ],
-    x_axis: {
+    xAxis: {
       title: "X",
       ticks: "pimultiple",
     },
-    y_axes: [
+    yAxes: [
       {
         title: "Y1",
         ticks: "auto",
@@ -202,10 +202,10 @@ interface Figure {
 interface Plot {
   series: Series[];                   // Data series
   title?: string;                     // Plot title
-  x_axis?: Axis;                      // X axis
-  x_axes?: Axis[];                    // Multiple X axes
-  y_axis?: Axis;                      // Y axis
-  y_axes?: Axis[];                    // Multiple Y axes
+  xAxis?: Axis;                      // X axis
+  xAxes?: Axis[];                    // Multiple X axes
+  yAxis?: Axis;                      // Y axis
+  yAxes?: Axis[];                    // Multiple Y axes
   legend?: PlotLegend;                // Plot legend
   annotations?: Annotation[];         // Annotations
   subplot?: [number, number];         // Subplot position
@@ -216,7 +216,7 @@ interface Series {
   x: number[];                        // X data
   y: number[];                        // Y data
   name?: string;                      // Series name
-  y_axis?: number;                    // Y axis index
+  yAxis?: number;                    // Y axis index
   // ... other style options
 }
 ```

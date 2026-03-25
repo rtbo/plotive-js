@@ -49,19 +49,19 @@ interface PlotBase {
 
 export type Plot = PlotBase & (
     {
-        x_axis?: Axis,
-        x_axes?: never,
+        xAxis?: Axis,
+        xAxes?: never,
     } | {
-        x_axis?: never,
-        x_axes?: Axis[];
+        xAxis?: never,
+        xAxes?: Axis[];
     }
 ) & (
         {
-            y_axis?: Axis,
-            y_axes?: never,
+            yAxis?: Axis,
+            yAxes?: never,
         } | {
-            y_axis?: never,
-            y_axes?: Axis[];
+            yAxis?: never,
+            yAxes?: Axis[];
         }
     );
 

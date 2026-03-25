@@ -119,6 +119,6 @@ export interface Axis {
     side?: "top" | "right" | "bottom" | "left";
     ticks?: Ticks | TicksLocator | TicksFormatterType;
     grid?: "default" | ThemeStroke;
-    minor_ticks?: Ticks | TicksLocator;
-    minor_grid?: "default" | ThemeStroke;
+    minorTicks?: Ticks | TicksLocator;
+    minorGrid?: "default" | ThemeStroke;
 }

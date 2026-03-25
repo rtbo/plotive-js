@@ -14,11 +14,11 @@ pub fn extract_annot(js_annot: &JsValue) -> Result<des::Annotation, JsValue> {
             typ_name
         ))),
     }?;
-    if let Some(js_axis_ref) = get_prop_if_defined(js_annot, "x_axis") {
+    if let Some(js_axis_ref) = get_prop_if_defined(js_annot, "xAxis") {
         let axis_ref = js_axis::extract_ref(&js_axis_ref)?;
         annot = annot.with_x_axis(axis_ref);
     }
-    if let Some(js_axis_ref) = get_prop_if_defined(js_annot, "y_axis") {
+    if let Some(js_axis_ref) = get_prop_if_defined(js_annot, "yAxis") {
         let axis_ref = js_axis::extract_ref(&js_axis_ref)?;
         annot = annot.with_y_axis(axis_ref);
     }
