@@ -4,6 +4,10 @@
   "keywords": ["plotting", "visualization", "charts", "graphs"],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rtbo/plotive-js.git"
+  },
   "scripts": {
     "build:wasm:web": "wasm-pack build --dev plotive-wasm --target web --out-dir ../src/wasm",
     "build:wasm:node": "wasm-pack build --dev plotive-wasm --target nodejs --out-dir ../src/wasm-node",
