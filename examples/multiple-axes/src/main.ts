@@ -12,9 +12,7 @@ const y2 = x.map(x => Math.sin(x) - 0.8 * Math.sin(x) ** 2)
 
 const fig = {
   title: "Example plot",
-  legend: {
-    pos: 'bottom',
-  },
+  legend: 'top',
   plot: {
     series: [
       {

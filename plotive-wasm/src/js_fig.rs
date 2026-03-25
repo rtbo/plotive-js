@@ -221,55 +221,66 @@ fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
     Ok(plot)
 }
 
+fn fig_legend_pos_from_str(pos_str: &str) -> Result<des::figure::LegendPos, JsValue> {
+    match pos_str {
+        "top" => Ok(des::figure::LegendPos::Top),
+        "right" => Ok(des::figure::LegendPos::Right),
+        "bottom" => Ok(des::figure::LegendPos::Bottom),
+        "left" => Ok(des::figure::LegendPos::Left),
+        _ => Err(JsValue::from_str(&format!(
+            "Unknown legend position: \"{}\"",
+            pos_str
+        ))),
+    }
+}
 
 fn extract_figure_legend(js_legend: &JsValue) -> Result<des::FigLegend, JsValue> {
     let mut pos = des::figure::LegendPos::default();
+    if let Some(pos_str) = js_legend.as_string() {
+        pos = fig_legend_pos_from_str(&pos_str)?;
+        return Ok(des::FigLegend::new(pos));
+    }
     if let Some(js_pos) = get_prop_if_defined(js_legend, "pos") {
         let pos_str = js_pos.as_string().ok_or_else(|| {
             JsValue::from_str("'legend.pos' property must be a string if defined")
         })?;
-        pos = match pos_str.as_str() {
-            "top" => des::figure::LegendPos::Top,
-            "right" => des::figure::LegendPos::Right,
-            "bottom" => des::figure::LegendPos::Bottom,
-            "left" => des::figure::LegendPos::Left,
-            _ => {
-                return Err(JsValue::from_str(&format!(
-                    "Unknown legend position: \"{}\"",
-                    pos_str
-                )));
-            }
-        };
+        pos = fig_legend_pos_from_str(&pos_str)?;
     }
     Ok(extract_legend(js_legend, pos)?)
 }
 
+fn plot_legend_pos_from_str(pos_str: &str) -> Result<des::plot::LegendPos, JsValue> {
+    match pos_str {
+        "out-top" => Ok(des::plot::LegendPos::OutTop),
+        "out-right" => Ok(des::plot::LegendPos::OutRight),
+        "out-bottom" => Ok(des::plot::LegendPos::OutBottom),
+        "out-left" => Ok(des::plot::LegendPos::OutLeft),
+        "in-top" => Ok(des::plot::LegendPos::InTop),
+        "in-top-right" => Ok(des::plot::LegendPos::InTopRight),
+        "in-right" => Ok(des::plot::LegendPos::InRight),
+        "in-bottom-right" => Ok(des::plot::LegendPos::InBottomRight),
+        "in-bottom" => Ok(des::plot::LegendPos::InBottom),
+        "in-bottom-left" => Ok(des::plot::LegendPos::InBottomLeft),
+        "in-left" => Ok(des::plot::LegendPos::InLeft),
+        "in-top-left" => Ok(des::plot::LegendPos::InTopLeft),
+        _ => Err(JsValue::from_str(&format!(
+            "Unknown legend position: \"{}\"",
+            pos_str
+        ))),
+    }
+}
+
 fn extract_plot_legend(js_legend: &JsValue) -> Result<des::PlotLegend, JsValue> {
     let mut pos = des::plot::LegendPos::default();
+    if let Some(pos_str) = js_legend.as_string() {
+        pos = plot_legend_pos_from_str(&pos_str)?;
+        return Ok(des::PlotLegend::new(pos));
+    }
     if let Some(js_pos) = get_prop_if_defined(js_legend, "pos") {
         let pos_str = js_pos.as_string().ok_or_else(|| {
             JsValue::from_str("'legend.pos' property must be a string if defined")
         })?;
-        pos = match pos_str.as_str() {
-            "out-top" => des::plot::LegendPos::OutTop,
-            "out-right" => des::plot::LegendPos::OutRight,
-            "out-bottom" => des::plot::LegendPos::OutBottom,
-            "out-left" => des::plot::LegendPos::OutLeft,
-            "in-top" => des::plot::LegendPos::InTop,
-            "in-top-right" => des::plot::LegendPos::InTopRight,
-            "in-right" => des::plot::LegendPos::InRight,
-            "in-bottom-right" => des::plot::LegendPos::InBottomRight,
-            "in-bottom" => des::plot::LegendPos::InBottom,
-            "in-bottom-left" => des::plot::LegendPos::InBottomLeft,
-            "in-left" => des::plot::LegendPos::InLeft,
-            "in-top-left" => des::plot::LegendPos::InTopLeft,
-            _ => {
-                return Err(JsValue::from_str(&format!(
-                    "Unknown legend position: \"{}\"",
-                    pos_str
-                )));
-            }
-        };
+        pos = plot_legend_pos_from_str(&pos_str)?;
     }
     Ok(extract_legend(js_legend, pos)?)
 }
