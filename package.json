@@ -1,6 +1,6 @@
 {
   "name": "plotive",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "keywords": ["plotting", "visualization", "charts", "graphs"],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
@@ -9,8 +9,8 @@
     "url": "https://github.com/rtbo/plotive-js.git"
   },
   "scripts": {
-    "build:wasm:web": "wasm-pack build --dev plotive-wasm --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build --dev plotive-wasm --target nodejs --out-dir ../src/wasm-node",
+    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
+    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../src/wasm-node",
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:ts:esm": "tsc -p tsconfig.esm.json",
     "build:ts:cjs": "tsc -p tsconfig.cjs.json",
