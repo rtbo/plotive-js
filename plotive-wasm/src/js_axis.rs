@@ -262,13 +262,15 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
                     JsValue::from_str("Second element of 'period' array must be a string")
                 })?;
                 match unit.as_str() {
-                    "seconds" => Ok(des::axis::ticks::DateTimeLocator::Seconds(num).into()),
-                    "minutes" => Ok(des::axis::ticks::DateTimeLocator::Minutes(num).into()),
-                    "hours" => Ok(des::axis::ticks::DateTimeLocator::Hours(num).into()),
-                    "days" => Ok(des::axis::ticks::DateTimeLocator::Days(num).into()),
-                    "weeks" => Ok(des::axis::ticks::DateTimeLocator::Weeks(num).into()),
-                    "months" => Ok(des::axis::ticks::DateTimeLocator::Months(num).into()),
-                    "years" => Ok(des::axis::ticks::DateTimeLocator::Years(num).into()),
+                    "micro" => Ok(des::axis::ticks::DateTimeLocator::Micros(num).into()),
+                    "milli" => Ok(des::axis::ticks::DateTimeLocator::Micros(num * 1000).into()),
+                    "sec" => Ok(des::axis::ticks::DateTimeLocator::Seconds(num).into()),
+                    "min" => Ok(des::axis::ticks::DateTimeLocator::Minutes(num).into()),
+                    "hour" => Ok(des::axis::ticks::DateTimeLocator::Hours(num).into()),
+                    "day" => Ok(des::axis::ticks::DateTimeLocator::Days(num).into()),
+                    "week" => Ok(des::axis::ticks::DateTimeLocator::Weeks(num).into()),
+                    "month" => Ok(des::axis::ticks::DateTimeLocator::Months(num).into()),
+                    "year" => Ok(des::axis::ticks::DateTimeLocator::Years(num).into()),
                     _ => Err(JsValue::from_str(&format!(
                         "Unknown DateTimeTicksLocator unit: {}",
                         unit
@@ -298,10 +300,12 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
                     JsValue::from_str("Second element of 'period' array must be a string")
                 })?;
                 match unit.as_str() {
-                    "seconds" => Ok(des::axis::ticks::TimeDeltaLocator::Seconds(num).into()),
-                    "minutes" => Ok(des::axis::ticks::TimeDeltaLocator::Minutes(num).into()),
-                    "hours" => Ok(des::axis::ticks::TimeDeltaLocator::Hours(num).into()),
-                    "days" => Ok(des::axis::ticks::TimeDeltaLocator::Days(num).into()),
+                    "micro" => Ok(des::axis::ticks::TimeDeltaLocator::Micros(num).into()),
+                    "milli" => Ok(des::axis::ticks::TimeDeltaLocator::Micros(num * 1000).into()),
+                    "sec" => Ok(des::axis::ticks::TimeDeltaLocator::Seconds(num).into()),
+                    "min" => Ok(des::axis::ticks::TimeDeltaLocator::Minutes(num).into()),
+                    "hour" => Ok(des::axis::ticks::TimeDeltaLocator::Hours(num).into()),
+                    "day" => Ok(des::axis::ticks::TimeDeltaLocator::Days(num).into()),
                     _ => Err(JsValue::from_str(&format!(
                         "Unknown TimeDeltaTicksLocator unit: {}",
                         unit

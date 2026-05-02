@@ -101,7 +101,7 @@ fn extract_line_series(js_ser: &JsValue) -> Result<des::series::Line, JsValue> {
         if !js_color.is_none() {
             stroke.color = js_style::extract_series_color(&js_color.unwrap())?;
         }
-        line = line.with_line(stroke);
+        line = line.with_stroke(stroke);
     }
 
     if let Some(js_interp) = get_prop_if_defined(js_ser, "interpolation") {

@@ -2,7 +2,7 @@ import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } fr
 import { ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
-import { Axis } from './axis';
+import { Axis, TicksLocator } from './axis';
 
 export type Size = [number, number];
 
@@ -26,10 +26,11 @@ export type PlotLegendPos =
 
 export interface Legend<Pos> {
     pos?: Pos;
+    fill?: ThemeFill;
     border?: ThemeStroke;
     columns?: number;
-    margin?: number;
     padding?: Padding;
+    margin?: number;
     spacing?: number | [number, number];
 }
 
@@ -37,51 +38,61 @@ export interface Legend<Pos> {
 export type FigLegend = Legend<FigLegendPos>;
 export type PlotLegend = Legend<PlotLegendPos>;
 
+export interface BoxPlotBorder {
+    type: "box";
+    stroke?: ThemeStroke;
+}
 
+export interface AxisPlotBorder {
+    type: "axis";
+    stroke?: ThemeStroke;
+}
 
-interface PlotBase {
-    series: Series[];
+export interface ArrowPlotBorder {
+    type: "arrow";
+    stroke?: ThemeStroke;
+    size?: number;
+    overflow?: number;
+}
+
+export type PlotBorder = BoxPlotBorder | AxisPlotBorder | ArrowPlotBorder;
+
+export type ColorBarPos = "auto" | "left" | "right" | "top" |"bottom";
+
+export interface ColorBar {
+    pos?: ColorBarPos;
+    width?: number;
     title?: string;
+    border?: ThemeStroke;
+    ticks?: TicksLocator;
+    margin?: number;
+}
+
+interface Plot {
+    series: Series | Series[];
+    title?: string;
+    xAxis?: Axis;
+    xAxes?: Axis[];
+    yAxis?: Axis;
+    yAxes?: Axis[];
+    fill?: ThemeFill;
+    border?: PlotBorder | string | ThemeStroke;
+    insets?: [number, number] | null;
     subplot?: [number, number];
     legend?: PlotLegendPos | PlotLegend;
+    colorbar?: ColorBarPos | ColorBar;
     annotations?: Annotation[];
 }
 
-export type Plot = PlotBase & (
-    {
-        xAxis?: Axis,
-        xAxes?: never,
-    } | {
-        xAxis?: never,
-        xAxes?: Axis[];
-    }
-) & (
-        {
-            yAxis?: Axis,
-            yAxes?: never,
-        } | {
-            yAxis?: never,
-            yAxes?: Axis[];
-        }
-    );
-
-interface FigureBase {
+interface Figure {
     size?: Size;
     title?: string;
+    plot?: Plot;
+    plots?: Plot[];
     padding?: Padding;
     fill?: ThemeFill;
     legend?: FigLegend;
 }
-
-export type Figure = FigureBase & (
-    {
-        plot: Plot;
-        plots?: never;
-    } | {
-        plot?: never;
-        plots: Plot[];
-    }
-)
 
 var initDone = false;
 

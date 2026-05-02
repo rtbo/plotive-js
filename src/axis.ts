@@ -66,7 +66,7 @@ export interface TimeDeltaTicksLocator {
 
 export type TicksLocatorType = "auto" | "maxn" | "pimultiple" | "log" | "datetime" | "timedelta";
 
-export type TicksLocator = TicksLocatorType | AutoTicksLocator | MaxNTicksLocator | PiMultipleTicksLocator | LogTicksLocator | DateTimeTicksLocator | TimeDeltaTicksLocator;
+export type TicksLocator = number[] | TicksLocatorType | AutoTicksLocator | MaxNTicksLocator | PiMultipleTicksLocator | LogTicksLocator | DateTimeTicksLocator | TimeDeltaTicksLocator;
 
 
 export interface AutoTicksFormatter {

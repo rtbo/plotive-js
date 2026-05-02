@@ -20,13 +20,15 @@ export type ThemeStroke = Stroke<ThemeColor>;
 export type SeriesStroke = Stroke<SeriesColor>;
 
 export type MarkerShape =
-    "circle" | "square" | "diamond" | "cross" | "plus" | "triangle-up" | "triangle-down";
+    "circle" | "square" | "diamond" | "cross" | "plus" | "triangle-up" | "triangle-down" | "triangle-left" | "triangle-right";
 
 export interface Marker<C = Color> {
     size?: number;
     shape?: MarkerShape;
     fill?: Fill<C>;
     stroke?: Stroke<C>;
+    color?: C;
+    fill_opacity?: number;
 }
 
 export type ThemeMarker = Marker<ThemeColor>;

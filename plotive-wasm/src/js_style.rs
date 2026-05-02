@@ -1,9 +1,9 @@
-use plotive::{style, ColorU8};
+use plotive::{style, Rgba8};
 use wasm_bindgen::JsValue;
 
 use crate::get_prop_if_defined;
 
-pub fn extract_color(js_col: &JsValue) -> Result<ColorU8, JsValue> {
+pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsValue> {
     if let Some(col) = js_col.as_string() {
         Ok(col.parse().map_err(|e| {
             JsValue::from_str(&format!("Failed to parse color string '{}': {}", col, e))
@@ -37,7 +37,7 @@ pub fn extract_color(js_col: &JsValue) -> Result<ColorU8, JsValue> {
         } else {
             1.0
         };
-        Ok(ColorU8::from_rgba(r, g, b, (a * 255.0).round() as u8))
+        Ok(Rgba8::new(r, g, b, (a * 255.0).round() as u8))
     } else {
         Err(JsValue::from_str("Color must be a string or RGB(A) array."))
     }
@@ -78,8 +78,9 @@ pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, J
     if let Some(s) = pattern.as_string() {
         match s.as_str() {
             "solid" => return Ok(style::LinePattern::Solid),
-            "dashed" => return Ok(style::Dash::default().into()),
+            "dashed" => return Ok(style::LinePattern::Dashed),
             "dotted" => return Ok(style::LinePattern::Dot),
+            "dash-dot" => return Ok(style::LinePattern::DashDot),
             _ => {
                 return Err(JsValue::from_str(&format!(
                     "Unknown line pattern string: {}",
