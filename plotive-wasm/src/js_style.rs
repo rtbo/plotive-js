@@ -1,49 +1,47 @@
 use plotive::{style, Rgba8};
 use wasm_bindgen::JsValue;
 
-use crate::get_prop_if_defined;
+use crate::{get_prop_if_defined, JsErr, js_err};
 
-pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsValue> {
+pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsErr> {
     if let Some(col) = js_col.as_string() {
-        Ok(col.parse().map_err(|e| {
-            JsValue::from_str(&format!("Failed to parse color string '{}': {}", col, e))
-        })?)
+        Ok(col
+            .parse()
+            .map_err(|e| js_err!("Failed to parse color string '{}': {}", col, e))?)
     } else if js_col.is_array() {
         let arr = js_sys::Array::from(js_col);
         if arr.length() < 3 || arr.length() > 4 {
-            return Err(JsValue::from_str(
-                "Color array must have length 3 (RGB) or 4 (RGBA).",
-            ));
+            return Err(js_err!("Color array must have length 3 (RGB) or 4 (RGBA)."));
         }
         let r = arr
             .get(0)
             .as_f64()
-            .ok_or_else(|| JsValue::from_str("Color array must contain numbers."))?
+            .ok_or_else(|| js_err!("Color array must contain numbers."))?
             as u8;
         let g = arr
             .get(1)
             .as_f64()
-            .ok_or_else(|| JsValue::from_str("Color array must contain numbers."))?
+            .ok_or_else(|| js_err!("Color array must contain numbers."))?
             as u8;
         let b = arr
             .get(2)
             .as_f64()
-            .ok_or_else(|| JsValue::from_str("Color array must contain numbers."))?
+            .ok_or_else(|| js_err!("Color array must contain numbers."))?
             as u8;
         let a = if arr.length() == 4 {
             arr.get(3)
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("Color array must contain numbers."))?
+                .ok_or_else(|| js_err!("Color array must contain numbers."))?
         } else {
             1.0
         };
         Ok(Rgba8::new(r, g, b, (a * 255.0).round() as u8))
     } else {
-        Err(JsValue::from_str("Color must be a string or RGB(A) array."))
+        Err(js_err!("Color must be a string or RGB(A) array."))
     }
 }
 
-pub fn extract_theme_color(js_col: &JsValue) -> Result<style::theme::Color, JsValue> {
+pub fn extract_theme_color(js_col: &JsValue) -> Result<style::theme::Color, JsErr> {
     if let Some(col) = js_col.as_string() {
         match col.as_str() {
             "background" => return Ok(style::theme::Col::Background.into()),
@@ -58,7 +56,7 @@ pub fn extract_theme_color(js_col: &JsValue) -> Result<style::theme::Color, JsVa
     Ok(color.into())
 }
 
-pub fn extract_series_color(js_col: &JsValue) -> Result<style::series::Color, JsValue> {
+pub fn extract_series_color(js_col: &JsValue) -> Result<style::series::Color, JsErr> {
     if let Some(idx) = js_col.as_f64() {
         return Ok(style::series::Color::Index(style::series::IndexColor(
             idx as usize,
@@ -74,7 +72,7 @@ pub fn extract_series_color(js_col: &JsValue) -> Result<style::series::Color, Js
     Ok(color.into())
 }
 
-pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, JsValue> {
+pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, JsErr> {
     if let Some(s) = pattern.as_string() {
         match s.as_str() {
             "solid" => return Ok(style::LinePattern::Solid),
@@ -82,10 +80,7 @@ pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, J
             "dotted" => return Ok(style::LinePattern::Dot),
             "dash-dot" => return Ok(style::LinePattern::DashDot),
             _ => {
-                return Err(JsValue::from_str(&format!(
-                    "Unknown line pattern string: {}",
-                    s
-                )));
+                return Err(js_err!("Unknown line pattern string: {}", s));
             }
         }
     }
@@ -93,23 +88,20 @@ pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, J
         .iter()
         .map(|v| v.as_f64().map(|f| f as f32))
         .collect();
-    let pattern_vec = pattern_vec.ok_or_else(|| {
-        JsValue::from_str("Line pattern must be either a string or an array of numbers.")
-    })?;
+    let pattern_vec = pattern_vec
+        .ok_or_else(|| js_err!("Line pattern must be either a string or an array of numbers."))?;
     Ok(style::Dash(pattern_vec).into())
 }
 
-pub fn extract_theme_stroke(js_stroke: &JsValue) -> Result<style::theme::Stroke, JsValue> {
+pub fn extract_theme_stroke(js_stroke: &JsValue) -> Result<style::theme::Stroke, JsErr> {
     let js_color = get_prop_if_defined(js_stroke, "color");
     if js_color.is_none() {
-        return Err(JsValue::from_str(
-            "\"color\" attribute is required for stroke.",
-        ));
+        return Err(js_err!("\"color\" attribute is required for stroke."));
     }
     let color = extract_theme_color(&js_color.unwrap())?;
     let width = if let Some(w) = get_prop_if_defined(js_stroke, "width") {
         w.as_f64()
-            .ok_or_else(|| JsValue::from_str("'width' property must be a number"))? as f32
+            .ok_or_else(|| js_err!("'width' property must be a number"))? as f32
     } else {
         1.0
     };
@@ -119,7 +111,7 @@ pub fn extract_theme_stroke(js_stroke: &JsValue) -> Result<style::theme::Stroke,
         style::LinePattern::Solid
     };
     let opacity = if let Some(o) = get_prop_if_defined(js_stroke, "opacity") {
-        Some(o.as_f64().ok_or_else(|| JsValue::from_str("'opacity' property must be a number"))? as f32)
+        Some(o.as_f64().ok_or_else(|| js_err!("'opacity' property must be a number"))? as f32)
     } else {
         None
     };
