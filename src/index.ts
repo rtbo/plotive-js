@@ -3,6 +3,7 @@ import { ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
+import { normalizeFig } from './norm.js';
 
 export type Size = [number, number];
 
@@ -57,7 +58,7 @@ export interface ArrowPlotBorder {
 
 export type PlotBorder = BoxPlotBorder | AxisPlotBorder | ArrowPlotBorder;
 
-export type ColorBarPos = "auto" | "left" | "right" | "top" |"bottom";
+export type ColorBarPos = "auto" | "left" | "right" | "top" | "bottom";
 
 export interface ColorBar {
     pos?: ColorBarPos;
@@ -68,7 +69,7 @@ export interface ColorBar {
     margin?: number;
 }
 
-interface Plot {
+export interface Plot {
     series: Series | Series[];
     title?: string;
     xAxis?: Axis;
@@ -84,11 +85,12 @@ interface Plot {
     annotations?: Annotation[];
 }
 
-interface Figure {
+export interface Figure {
     size?: Size;
     title?: string;
     plot?: Plot;
     plots?: Plot[];
+
     padding?: Padding;
     fill?: ThemeFill;
     legend?: FigLegend;
@@ -105,23 +107,32 @@ async function initOnce() {
 }
 
 export async function renderAsSvg(elem: Element, fig: Figure) {
-    await initOnce();
+    const prom = initOnce();
+    fig = normalizeFig(fig);
+    await prom;
+
     let svg = render_to_svg_string(fig);
     elem.innerHTML = svg;
 }
 
 export async function renderToSvgString(fig: Figure): Promise<string> {
-    await initOnce();
+    const prom = initOnce();
+    fig = normalizeFig(fig);
+    await prom;
     return render_to_svg_string(fig);
 }
 
 export async function renderToImg(elem: HTMLImageElement, fig: Figure) {
-    await initOnce();
+    const prom = initOnce();
+    fig = normalizeFig(fig);
+    await prom;
     let data = render_to_png_data_url(fig);
     elem.src = data;
 }
 
 export async function renderToPngDataUrl(fig: Figure): Promise<string> {
-    await initOnce();
+    const prom = initOnce();
+    fig = normalizeFig(fig);
+    await prom;
     return render_to_png_data_url(fig);
 }
