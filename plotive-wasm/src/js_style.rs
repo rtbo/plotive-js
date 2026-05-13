@@ -1,7 +1,7 @@
 use plotive::{style, Rgba8};
 use wasm_bindgen::JsValue;
 
-use crate::{get_prop_if_defined, JsErr, js_err};
+use crate::{extract_number_prop_if_defined, get_prop_if_defined, js_err, JsErr};
 
 pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsErr> {
     if let Some(col) = js_col.as_string() {
@@ -16,18 +16,15 @@ pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsErr> {
         let r = arr
             .get(0)
             .as_f64()
-            .ok_or_else(|| js_err!("Color array must contain numbers."))?
-            as u8;
+            .ok_or_else(|| js_err!("Color array must contain numbers."))? as u8;
         let g = arr
             .get(1)
             .as_f64()
-            .ok_or_else(|| js_err!("Color array must contain numbers."))?
-            as u8;
+            .ok_or_else(|| js_err!("Color array must contain numbers."))? as u8;
         let b = arr
             .get(2)
             .as_f64()
-            .ok_or_else(|| js_err!("Color array must contain numbers."))?
-            as u8;
+            .ok_or_else(|| js_err!("Color array must contain numbers."))? as u8;
         let a = if arr.length() == 4 {
             arr.get(3)
                 .as_f64()
@@ -93,32 +90,148 @@ pub fn extract_stroke_pattern(pattern: &JsValue) -> Result<style::LinePattern, J
     Ok(style::Dash(pattern_vec).into())
 }
 
+fn extract_stroke<C>(js_stroke: &JsValue, stroke: &mut style::Stroke<C>) -> Result<(), JsErr>
+where
+    C: plotive::Color,
+{
+    if let Some(w) = extract_number_prop_if_defined(js_stroke, "width")? {
+        stroke.width = w as f32;
+    }
+    if let Some(p) = get_prop_if_defined(js_stroke, "pattern") {
+        stroke.pattern = extract_stroke_pattern(&p)?;
+    }
+    stroke.opacity = extract_number_prop_if_defined(js_stroke, "opacity")?.map(|o| o as f32);
+
+    Ok(())
+}
+
 pub fn extract_theme_stroke(js_stroke: &JsValue) -> Result<style::theme::Stroke, JsErr> {
     let js_color = get_prop_if_defined(js_stroke, "color");
     if js_color.is_none() {
         return Err(js_err!("\"color\" attribute is required for stroke."));
     }
     let color = extract_theme_color(&js_color.unwrap())?;
-    let width = if let Some(w) = get_prop_if_defined(js_stroke, "width") {
-        w.as_f64()
-            .ok_or_else(|| js_err!("'width' property must be a number"))? as f32
-    } else {
-        1.0
+    let mut stroke = style::theme::Stroke {
+        color,
+        width: 1.0,
+        pattern: style::LinePattern::Solid,
+        opacity: None,
     };
-    let pattern = if let Some(p) = get_prop_if_defined(js_stroke, "pattern") {
-        extract_stroke_pattern(&p)?
+    extract_stroke(js_stroke, &mut stroke)?;
+    Ok(stroke)
+}
+
+pub fn extract_series_stroke(js_stroke: &JsValue) -> Result<style::series::Stroke, JsErr> {
+    let mut stroke = style::series::Stroke::default();
+    if let Some(js_color) = get_prop_if_defined(js_stroke, "color") {
+        let color = extract_series_color(&js_color)?;
+        stroke.color = color;
+    }
+    extract_stroke(js_stroke, &mut stroke)?;
+    Ok(stroke)
+}
+
+fn extract_fill<C>(js_fill: &JsValue, color: C) -> Result<style::Fill<C>, JsErr>
+where
+    C: plotive::Color,
+{
+    let opacity = get_prop_if_defined(js_fill, "opacity")
+        .map(|o| {
+            o.as_f64()
+                .ok_or_else(|| js_err!("'opacity' property must be a number"))
+        })
+        .transpose()?
+        .map(|o| o as f32);
+
+    Ok(style::Fill::Solid { color, opacity })
+}
+
+pub fn extract_theme_fill(js_fill: &JsValue) -> Result<style::theme::Fill, JsErr> {
+    let js_color = get_prop_if_defined(js_fill, "color");
+    if js_color.is_none() {
+        return Err(js_err!("\"color\" attribute is required for stroke."));
+    }
+    let color = extract_theme_color(&js_color.unwrap())?;
+    extract_fill(js_fill, color)
+}
+
+pub fn extract_series_fill(js_fill: &JsValue) -> Result<style::series::Fill, JsErr> {
+    let js_color = get_prop_if_defined(js_fill, "color");
+    if js_color.is_none() {
+        return Err(js_err!("\"color\" attribute is required for fill."));
+    }
+    let color = extract_series_color(&js_color.unwrap())?;
+    extract_fill(js_fill, color)
+}
+
+fn extract_marker<C>(
+    js_marker: &JsValue,
+    fill: Option<style::Fill<C>>,
+    stroke: Option<style::Stroke<C>>,
+) -> Result<style::Marker<C>, JsErr>
+where
+    C: plotive::Color,
+{
+    let shape = if let Some(s) = get_prop_if_defined(js_marker, "shape") {
+        if let Some(s) = s.as_string() {
+            match s.as_str() {
+                "circle" => style::MarkerShape::Circle,
+                "square" => style::MarkerShape::Square,
+                "diamond" => style::MarkerShape::Diamond,
+                "cross" => style::MarkerShape::Cross,
+                "plus" => style::MarkerShape::Plus,
+                "triangle-up" => style::MarkerShape::TriangleUp,
+                "triangle-down" => style::MarkerShape::TriangleDown,
+                "triangle-left" => style::MarkerShape::TriangleLeft,
+                "triangle-right" => style::MarkerShape::TriangleRight,
+                _ => return Err(js_err!("Unknown marker shape: {}", s)),
+            }
+        } else {
+            return Err(js_err!("'shape' property must be a string"));
+        }
     } else {
-        style::LinePattern::Solid
+        style::MarkerShape::Circle
     };
-    let opacity = if let Some(o) = get_prop_if_defined(js_stroke, "opacity") {
-        Some(o.as_f64().ok_or_else(|| js_err!("'opacity' property must be a number"))? as f32)
+
+    let size = if let Some(s) = get_prop_if_defined(js_marker, "size") {
+        s.as_f64()
+            .ok_or_else(|| js_err!("'size' property must be a number"))? as f32
+    } else {
+        5.0
+    }
+    .into();
+    Ok(style::Marker {
+        shape,
+        size,
+        fill,
+        stroke,
+    })
+}
+
+pub fn extract_series_marker(js_marker: &JsValue) -> Result<style::series::Marker, JsErr> {
+    let fill = if let Some(js_fill) = get_prop_if_defined(js_marker, "fill") {
+        Some(extract_series_fill(&js_fill)?)
     } else {
         None
     };
-    Ok(style::theme::Stroke {
-        color,
-        width,
-        pattern,
-        opacity,
-    })
+    let stroke = if let Some(js_stroke) = get_prop_if_defined(js_marker, "stroke") {
+        Some(extract_series_stroke(&js_stroke)?)
+    } else {
+        None
+    };
+    extract_marker(js_marker, fill, stroke).map(Into::into)
+}
+
+pub fn extract_theme_marker(js_marker: &JsValue) -> Result<style::theme::Marker, JsErr> {
+    let fill = if let Some(js_fill) = get_prop_if_defined(js_marker, "fill") {
+        Some(extract_theme_fill(&js_fill)?)
+    } else {
+        None
+    };
+    let stroke = if let Some(js_stroke) = get_prop_if_defined(js_marker, "stroke") {
+        Some(extract_theme_stroke(&js_stroke)?)
+    } else {
+        None
+    };
+    extract_marker(js_marker, fill, stroke).map(Into::into)
 }

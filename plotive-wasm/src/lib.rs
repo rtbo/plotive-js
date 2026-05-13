@@ -1,7 +1,7 @@
 use js_sys::Reflect;
 use plotive::Prepare;
-use wasm_bindgen::prelude::*;
 use std::fmt;
+use wasm_bindgen::prelude::*;
 
 mod js_annot;
 mod js_axis;
@@ -34,7 +34,6 @@ macro_rules! js_err {
 
 pub(crate) use js_err;
 
-
 #[wasm_bindgen]
 extern "C" {
     fn alert(s: &str);
@@ -56,9 +55,7 @@ pub fn set_panic_hook() {
 pub fn render_to_svg_string(fig: JsValue) -> Result<String, JsError> {
     let fig = js_fig::extract_figure(&fig)?;
     let mut surf = plotive_svg::SvgSurface::new(800, 600);
-    let fig = fig
-        .prepare(&(), None)
-        .map_err(|e| js_err!("{}", e))?;
+    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
     fig.draw(&mut surf, &Default::default());
     let mut svg_str = Vec::new();
     surf.write(&mut svg_str).map_err(|e| js_err!("{}", e))?;
@@ -72,24 +69,21 @@ pub fn render_to_png_data_url(fig: JsValue) -> Result<String, JsError> {
 
     let fig = js_fig::extract_figure(&fig)?;
     let mut surf = plotive_pxl::PxlSurface::new(800, 600).unwrap();
-    let fig = fig
-        .prepare(&(), None)
-        .map_err(|e| js_err!("{}", e))?;
+    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
     fig.draw(&mut surf, &Default::default());
     let png_data = surf
         .into_pixmap()
         .encode_png()
         .map_err(|e| js_err!("{}", e))?;
-    Ok(format!("data:image/png;base64,{}", BASE64_STANDARD.encode(&png_data)))
+    Ok(format!(
+        "data:image/png;base64,{}",
+        BASE64_STANDARD.encode(&png_data)
+    ))
 }
 
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {
     let name = JsValue::from_str(prop);
-    if Reflect::has(obj, &name).unwrap_or(false) {
-        Reflect::get(obj, &name).ok()
-    } else {
-        None
-    }
+    Reflect::get(obj, &name).ok().filter(|v| !v.is_undefined())
 }
 
 fn extract_type(js_obj: &JsValue) -> Result<String, JsErr> {
@@ -131,11 +125,12 @@ fn extract_number_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option
         .transpose()
 }
 
-fn extract_array_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option<js_sys::Array>, JsErr> {
+fn extract_array_prop_if_defined(
+    js_obj: &JsValue,
+    prop: &str,
+) -> Result<Option<js_sys::Array>, JsErr> {
     get_prop_if_defined(js_obj, prop)
-        .map(|v| {
-            v.dyn_into::<js_sys::Array>()
-        })
+        .map(|v| v.dyn_into::<js_sys::Array>())
         .transpose()
         .map_err(|_| js_err!("'{}' property must be an array.", prop))
 }

@@ -1,5 +1,5 @@
 import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } from './wasm/plotive_wasm.js'
-import { ThemeFill, ThemeStroke } from "./style";
+import { ThemeColor, ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
@@ -56,6 +56,7 @@ export interface ArrowPlotBorder {
     overflow?: number;
 }
 
+export type PlotBorderType = "box" | "axis" | "arrow";
 export type PlotBorder = BoxPlotBorder | AxisPlotBorder | ArrowPlotBorder;
 
 export type ColorBarPos = "auto" | "left" | "right" | "top" | "bottom";
@@ -64,7 +65,7 @@ export interface ColorBar {
     pos?: ColorBarPos;
     width?: number;
     title?: string;
-    border?: ThemeStroke;
+    border?: ThemeStroke | null;
     ticks?: TicksLocator;
     margin?: number;
 }
@@ -76,9 +77,9 @@ export interface Plot {
     xAxes?: Axis[];
     yAxis?: Axis;
     yAxes?: Axis[];
-    fill?: ThemeFill;
-    border?: PlotBorder | string | ThemeStroke;
-    insets?: [number, number] | null;
+    fill?: ThemeColor | ThemeFill;
+    border?: PlotBorderType | PlotBorder | ThemeColor | ThemeStroke | null;
+    insets?: "auto" | [number, number] | null;
     subplot?: [number, number];
     legend?: PlotLegendPos | PlotLegend;
     colorbar?: ColorBarPos | ColorBar;
@@ -90,10 +91,11 @@ export interface Figure {
     title?: string;
     plot?: Plot;
     plots?: Plot[];
+    space?: number;
 
     padding?: Padding;
-    fill?: ThemeFill;
-    legend?: FigLegend;
+    fill?: ThemeColor | ThemeFill;
+    legend?: FigLegendPos | FigLegend;
 }
 
 var initDone = false;

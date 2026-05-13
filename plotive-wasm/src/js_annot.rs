@@ -2,11 +2,7 @@ use plotive::des;
 use wasm_bindgen::{JsCast, JsValue};
 
 use crate::{
-    extract_array_prop_if_defined, extract_number_prop, extract_number_prop_if_defined,
-    extract_string_prop, extract_string_prop_if_defined, extract_type, get_prop_if_defined,
-    js_axis,
-    js_style::{extract_stroke_pattern, extract_theme_color, extract_theme_stroke},
-    JsErr, js_err,
+    JsErr, extract_array_prop_if_defined, extract_number_prop, extract_number_prop_if_defined, extract_string_prop, extract_string_prop_if_defined, extract_type, get_prop_if_defined, js_axis, js_err, js_style::{extract_stroke_pattern, extract_theme_color, extract_theme_marker, extract_theme_stroke}
 };
 
 pub fn extract_annot(js_annot: &JsValue) -> Result<des::Annotation, JsErr> {
@@ -14,6 +10,7 @@ pub fn extract_annot(js_annot: &JsValue) -> Result<des::Annotation, JsErr> {
     let mut annot = match typ_name.as_str() {
         "line" => extract_line_annot(js_annot).map(des::Annotation::Line),
         "arrow" => extract_arrow_annot(js_annot).map(des::Annotation::Arrow),
+        "marker" => extract_marker_annot(js_annot).map(des::Annotation::Marker),
         "label" => extract_label_annot(js_annot).map(des::Annotation::Label),
         _ => Err(js_err!("Unsupported annotation type: {}", typ_name)),
     }?;
@@ -126,6 +123,18 @@ fn extract_arrow_annot(js_annot: &JsValue) -> Result<des::annot::Arrow, JsErr> {
         arrow = arrow.with_stroke(stroke);
     }
     Ok(arrow)
+}
+
+fn extract_marker_annot(js_annot: &JsValue) -> Result<des::annot::Marker, JsErr> {
+    let x = extract_number_prop(js_annot, "x")?;
+    let y = extract_number_prop(js_annot, "y")?;
+    let mut annot = des::annot::Marker::new(x, y);
+
+    if let Some(js_marker) = get_prop_if_defined(js_annot, "marker") {
+        let marker = extract_theme_marker(&js_marker)?;
+        annot = annot.with_marker(marker);
+    }
+    Ok(annot)
 }
 
 fn extract_label_annot(js_annot: &JsValue) -> Result<des::annot::Label, JsErr> {

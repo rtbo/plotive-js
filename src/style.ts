@@ -6,7 +6,10 @@ export type ThemeColor = Color | ThemePaletteColor;
 export type SeriesPaletteColor = "auto" | number;
 export type SeriesColor = Color | SeriesPaletteColor;
 
-export type Fill<C> = C;
+export interface Fill<C = Color> {
+    color: C;
+    opacity?: number;
+};
 export type ThemeFill = Fill<ThemeColor>;
 export type SeriesFill = Fill<SeriesColor>;
 
@@ -14,6 +17,7 @@ export interface Stroke<C = Color> {
     color: C;
     width?: number;
     pattern?: number[];
+    opacity?: number;
 }
 
 export type ThemeStroke = Stroke<ThemeColor>;
@@ -25,10 +29,10 @@ export type MarkerShape =
 export interface Marker<C = Color> {
     size?: number;
     shape?: MarkerShape;
-    fill?: Fill<C>;
-    stroke?: Stroke<C>;
+    fill?: C | Fill<C> | null;
+    stroke?: C | Stroke<C> | null;
     color?: C;
-    fill_opacity?: number;
+    fillOpacity?: number;
 }
 
 export type ThemeMarker = Marker<ThemeColor>;
