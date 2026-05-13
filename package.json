@@ -9,8 +9,8 @@
     "url": "https://github.com/rtbo/plotive-js.git"
   },
   "scripts": {
-    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../src/wasm-node",
+    "build:wasm:web": "wasm-pack build plotive-wasm --dev --target web --out-dir ../src/wasm",
+    "build:wasm:node": "wasm-pack build plotive-wasm --dev --target nodejs --out-dir ../src/wasm-node",
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:ts:esm": "tsc -p tsconfig.esm.json",
     "build:ts:cjs": "tsc -p tsconfig.cjs.json",
