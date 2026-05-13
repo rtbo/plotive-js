@@ -14,12 +14,13 @@
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:ts:esm": "tsc -p tsconfig.esm.json",
     "build:ts:cjs": "tsc -p tsconfig.cjs.json",
+    "build:node:esm": "node scripts/build-node-esm.mjs",
     "build:ts": "pnpm run build:ts:esm && pnpm run build:ts:cjs",
     "clean:dist": "node scripts/clean-dist.mjs",
     "copy:wasm": "node scripts/copy-wasm.mjs",
     "copy:wasm:node": "node scripts/copy-wasm-node.mjs",
     "rename:esm": "node scripts/rename-esm-to-mjs.mjs",
-    "build": "pnpm run clean:dist && pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run rename:esm",
+    "build": "pnpm run clean:dist && pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run build:node:esm && pnpm run rename:esm",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
@@ -35,8 +36,14 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
+      "node": {
+        "import": "./dist/node-esm/index.mjs",
+        "require": "./dist/cjs/index.cjs"
+      },
+      "browser": "./dist/esm/index.mjs",
       "import": "./dist/esm/index.mjs",
-      "require": "./dist/cjs/index.cjs"
+      "require": "./dist/cjs/index.cjs",
+      "default": "./dist/esm/index.mjs"
     }
   },
   "files": [

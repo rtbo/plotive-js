@@ -45,7 +45,17 @@ for (const jsPath of jsFiles) {
 const relJsImportPattern = /(["'])(\.{1,2}\/[^"']+)\.js\1/g;
 for (const filePath of mjsFiles) {
     const content = readFileSync(filePath, 'utf8');
-    const updated = content.replace(relJsImportPattern, '$1$2.mjs$1');
+    let updated = content.replace(relJsImportPattern, '$1$2.mjs$1');
+
+    // wasm-bindgen encodes this module name in the wasm binary; keep it unchanged.
+    updated = updated.replace(/(["'])\.\/plotive_wasm_bg\.mjs\1/g, '$1./plotive_wasm_bg.js$1');
+
+    // Some bundlers rewrite static .js strings to .mjs; computed key avoids that rewrite.
+    updated = updated.replace(
+        /(["'])\.\/plotive_wasm_bg\.(?:mjs|js)\1:\s*import0,/g,
+        '["./plotive_wasm_bg" + ".js"]: import0,'
+    );
+
     if (updated !== content) {
         writeFileSync(filePath, updated, 'utf8');
     }
