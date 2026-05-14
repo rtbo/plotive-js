@@ -99,14 +99,21 @@ export interface Figure {
     legend?: FigLegendPos | FigLegend;
 }
 
-let initDone = false;
+let initPromise: Promise<void> | null = null;
 
-async function initOnce() {
-    if (!initDone) {
-        initDone = true;
-        await init();
-        set_panic_hook();
+function initOnce(): Promise<void> {
+    if (!initPromise) {
+        initPromise = (async () => {
+            try {
+                await init();
+                set_panic_hook();
+            } catch (err) {
+                initPromise = null;
+                throw err;
+            }
+        })();
     }
+    return initPromise;
 }
 
 const runtime = createRuntime<Figure>({
