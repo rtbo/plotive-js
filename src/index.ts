@@ -4,6 +4,7 @@ import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
 import { normalizeFig } from './norm.js';
+import { createRuntime } from './runtime';
 
 export type Size = [number, number];
 
@@ -98,7 +99,7 @@ export interface Figure {
     legend?: FigLegendPos | FigLegend;
 }
 
-var initDone = false;
+let initDone = false;
 
 async function initOnce() {
     if (!initDone) {
@@ -108,33 +109,14 @@ async function initOnce() {
     }
 }
 
-export async function renderAsSvg(elem: Element, fig: Figure) {
-    const prom = initOnce();
-    fig = normalizeFig(fig);
-    await prom;
+const runtime = createRuntime<Figure>({
+    init: initOnce,
+    normalize: normalizeFig,
+    renderToSvg: render_to_svg_string,
+    renderToPng: render_to_png_data_url,
+});
 
-    let svg = render_to_svg_string(fig);
-    elem.innerHTML = svg;
-}
-
-export async function renderToSvgString(fig: Figure): Promise<string> {
-    const prom = initOnce();
-    fig = normalizeFig(fig);
-    await prom;
-    return render_to_svg_string(fig);
-}
-
-export async function renderToImg(elem: HTMLImageElement, fig: Figure) {
-    const prom = initOnce();
-    fig = normalizeFig(fig);
-    await prom;
-    let data = render_to_png_data_url(fig);
-    elem.src = data;
-}
-
-export async function renderToPngDataUrl(fig: Figure): Promise<string> {
-    const prom = initOnce();
-    fig = normalizeFig(fig);
-    await prom;
-    return render_to_png_data_url(fig);
-}
+export const renderAsSvg = runtime.renderAsSvg;
+export const renderToSvgString = runtime.renderToSvgString;
+export const renderToImg = runtime.renderToImg;
+export const renderToPngDataUrl = runtime.renderToPngDataUrl;
