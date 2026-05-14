@@ -1,5 +1,5 @@
 {
-  "name": "plotive-js-example-sine",
+  "name": "plotive-js-example",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "plotive": "file:../.."
+    "plotive": "file:.."
   },
   "devDependencies": {
     "@types/node": "^24.6.1",

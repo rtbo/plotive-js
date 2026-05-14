@@ -1,7 +1,12 @@
 {
   "name": "plotive",
   "version": "0.3.0",
-  "keywords": ["plotting", "visualization", "charts", "graphs"],
+  "keywords": [
+    "plotting",
+    "visualization",
+    "charts",
+    "graphs"
+  ],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
   "repository": {
@@ -24,12 +29,9 @@
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
-    "example:sine:install": "pnpm --dir examples/sine install",
-    "example:sine:dev": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run dev",
-    "example:sine:build": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run build",
-    "example:multiple-axes:install": "pnpm --dir examples/multiple-axes install",
-    "example:multiple-axes:dev": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run dev",
-    "example:multiple-axes:build": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run build"
+    "example:install": "pnpm --dir example install",
+    "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir example run dev",
+    "example:build": "pnpm run build && pnpm run example:install && pnpm --dir example run build"
   },
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.mjs",
@@ -56,4 +58,3 @@
     "vite": "^7.3.1"
   }
 }
-
