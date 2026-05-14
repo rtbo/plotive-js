@@ -14,18 +14,12 @@
     "url": "https://github.com/rtbo/plotive-js.git"
   },
   "scripts": {
-    "build:wasm:web": "wasm-pack build plotive-wasm --dev --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build plotive-wasm --dev --target nodejs --out-dir ../src/wasm-node",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build:wasm:web": "wasm-pack build plotive-wasm --dev --target web --out-dir ../dist/esm/wasm && rm -f dist/esm/wasm/.gitignore dist/esm/wasm/package.json dist/esm/wasm/README.md",
+    "build:wasm:node": "wasm-pack build plotive-wasm --dev --target nodejs --out-dir ../dist/cjs/wasm && rm -f dist/cjs/wasm/.gitignore dist/cjs/wasm/package.json dist/cjs/wasm/README.md",
     "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
-    "build:ts:esm": "tsc -p tsconfig.esm.json",
-    "build:ts:cjs": "tsc -p tsconfig.cjs.json",
-    "build:node:esm": "node scripts/build-node-esm.mjs",
-    "build:ts": "pnpm run build:ts:esm && pnpm run build:ts:cjs",
-    "clean:dist": "node scripts/clean-dist.mjs",
-    "copy:wasm": "node scripts/copy-wasm.mjs",
-    "copy:wasm:node": "node scripts/copy-wasm-node.mjs",
-    "rename:esm": "node scripts/rename-esm-to-mjs.mjs",
-    "build": "pnpm run clean:dist && pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run build:node:esm && pnpm run rename:esm",
+    "build:ts": "tsup",
+    "build": "pnpm run clean && pnpm run build:wasm && pnpm run build:ts",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
@@ -37,7 +31,7 @@
   "module": "./dist/esm/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/esm/index.d.ts",
+      "types": "./dist/esm/index.d.mts",
       "node": {
         "import": "./dist/node-esm/index.mjs",
         "require": "./dist/cjs/index.cjs"
@@ -54,6 +48,8 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@types/node": "^25.8.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }
