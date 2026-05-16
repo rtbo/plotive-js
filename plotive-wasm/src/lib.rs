@@ -66,15 +66,12 @@ pub fn render_to_svg_string(fig: JsValue) -> Result<String, JsError> {
 #[wasm_bindgen]
 pub fn render_to_png_data_url(fig: JsValue) -> Result<String, JsError> {
     use base64::prelude::*;
+    use plotive_pxl::PxlRender;
 
     let fig = js_fig::extract_figure(&fig)?;
-    let mut surf = plotive_pxl::PxlSurface::new(800, 600).unwrap();
-    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
-    fig.draw(&mut surf, &Default::default());
-    let png_data = surf
-        .into_pixmap()
-        .encode_png()
+    let png_data = fig.to_png_data(&(), Default::default())
         .map_err(|e| js_err!("{}", e))?;
+
     Ok(format!(
         "data:image/png;base64,{}",
         BASE64_STANDARD.encode(&png_data)

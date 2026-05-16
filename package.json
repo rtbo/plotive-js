@@ -23,9 +23,9 @@
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "dev": "vite",
-    "example:install": "pnpm --dir example install",
-    "example:dev": "pnpm run build && pnpm run example:install && pnpm --dir example run dev",
-    "example:build": "pnpm run build && pnpm run example:install && pnpm --dir example run build"
+    "examples:install": "pnpm --dir examples install",
+    "examples:dev": "pnpm run build && pnpm run examples:install && pnpm --dir examples run dev",
+    "examples:build": "pnpm run build && pnpm run examples:install && pnpm --dir examples run build"
   },
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.mjs",
