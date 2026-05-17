@@ -14,40 +14,35 @@
     "url": "https://github.com/rtbo/plotive-js.git"
   },
   "scripts": {
-    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-    "build:wasm:types": "wasm-pack build plotive-wasm --dev --target web --out-dir ../src/wasm",
-    "build:wasm:web:dev": "wasm-pack build plotive-wasm --dev --target web --out-dir ../dist/esm/wasm && rm -f dist/esm/wasm/.gitignore dist/esm/wasm/package.json dist/esm/wasm/README.md",
-    "build:wasm:node:dev": "wasm-pack build plotive-wasm --dev --target nodejs --out-dir ../dist/cjs/wasm && rm -f dist/cjs/wasm/.gitignore dist/cjs/wasm/package.json dist/cjs/wasm/README.md",
-    "build:wasm:dev": "pnpm run build:wasm:web:dev && pnpm run build:wasm:node:dev",
-    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../dist/esm/wasm && rm -f dist/esm/wasm/.gitignore dist/esm/wasm/package.json dist/esm/wasm/README.md",
-    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../dist/cjs/wasm && rm -f dist/cjs/wasm/.gitignore dist/cjs/wasm/package.json dist/cjs/wasm/README.md",
-    "build:wasm": "pnpm run build:wasm:types && pnpm run build:wasm:web && pnpm run build:wasm:node",
+    "clean": "node scripts/clean.js",
+    "build:wasm:dev": "node scripts/wasm.js --target dev",
+    "build:wasm:prod": "node scripts/wasm.js --target prod",
     "build:ts:web": "vite -c vite.lib.config.ts build --mode web",
     "build:ts:node-cjs": "vite -c vite.lib.config.ts build --mode node-cjs",
     "build:ts:node-esm": "vite -c vite.lib.config.ts build --mode node-esm",
     "build:ts:types": "tsc -p tsconfig.build.json",
     "build:ts:all": "pnpm run build:ts:web && pnpm run build:ts:node-cjs && pnpm run build:ts:node-esm && pnpm run build:ts:types",
-    "build:dev": "pnpm run clean && pnpm run build:wasm:dev && pnpm run build:wasm:types && pnpm run build:ts:web && pnpm run build:ts:types",
-    "build": "pnpm run clean && pnpm run build:wasm && pnpm run build:ts:all",
+    "build:dev": "pnpm run clean && pnpm run build:wasm:dev && pnpm run build:ts:web && pnpm run build:ts:types",
+    "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "examples:install": "pnpm --dir examples install",
     "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples run dev"
   },
-  "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.mjs",
+  "main": "./dist/node/cjs/index.cjs",
+  "module": "./dist/web/index.mjs",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
       "node": {
-        "import": "./dist/node-esm/index.mjs",
-        "require": "./dist/cjs/index.cjs"
+        "import": "./dist/node/esm/index.mjs",
+        "require": "./dist/node/cjs/index.cjs"
       },
-      "browser": "./dist/esm/index.mjs",
-      "import": "./dist/esm/index.mjs",
-      "require": "./dist/cjs/index.cjs",
-      "default": "./dist/esm/index.mjs"
+      "browser": "./dist/web/index.mjs",
+      "import": "./dist/web/index.mjs",
+      "require": "./dist/node/cjs/index.cjs",
+      "default": "./dist/web/index.mjs"
     }
   },
   "files": [
