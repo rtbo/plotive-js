@@ -7,13 +7,11 @@ export default function (): Figure {
     return {
         title: "Sine line series",
         plot: {
-            series: [
-                {
-                    type: "line",
-                    x: x,
-                    y: y,
-                },
-            ]
+            series: {
+                type: "line",
+                x,
+                y,
+            },
         }
     }
 }

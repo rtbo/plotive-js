@@ -1,12 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-enum Renderer {
+export enum Renderer {
     Png = 'png',
     Svg = 'svg',
 }
 
-enum Theme {
+export enum Theme {
     BlackWhite = 'black-white',
     Light = 'light (default)',
     Dark = 'dark',

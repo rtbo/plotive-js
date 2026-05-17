@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useParamsStore } from '@/stores/params';
+import { Renderer, useParamsStore } from '@/stores/params';
 import { computed, onMounted, ref, watch } from 'vue';
 import { renderAsSvg, renderToImg, type Figure } from 'plotive';
 import hljs from 'highlight.js/lib/core';
@@ -24,10 +24,10 @@ const highlightedCode = computed(() => {
 
 async function drawFigure() {
     const fig = props.figureFn();
-    if (params.renderer === 'svg' && svgContainer.value) {
+    if (params.renderer === Renderer.Svg && svgContainer.value) {
         await renderAsSvg(svgContainer.value, fig);
     }
-    if (params.renderer === 'png' && pngImage.value) {
+    if (params.renderer === Renderer.Png && pngImage.value) {
         await renderToImg(pngImage.value, fig);
     }
 }
