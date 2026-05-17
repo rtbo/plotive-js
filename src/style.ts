@@ -61,6 +61,8 @@ export const CATPPUCCIN_LATTE: Style = {
     theme: "catppuccin-latte",
     palette: "catppuccin-latte",
 }
+export const DEFAULT = LIGHT;
+
 export const BUILTIN_STYLES = {
     "black-white": BLACK_WHITE,
     "light": LIGHT,

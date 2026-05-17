@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Renderer, useParamsStore } from '@/stores/params';
+import { useSettingsStore } from '@/stores/settings';
 import { computed, onMounted, ref, watch } from 'vue';
 import { renderAsSvg, renderToImg, type Figure } from 'plotive';
 import hljs from 'highlight.js/lib/core';
@@ -14,7 +14,7 @@ const props = defineProps<{
     figureFn: () => Figure;
 }>();
 
-const params = useParamsStore();
+const settings = useSettingsStore();
 const svgContainer = ref<HTMLElement | null>(null);
 const pngImage = ref<HTMLImageElement | null>(null);
 
@@ -24,11 +24,12 @@ const highlightedCode = computed(() => {
 
 async function drawFigure() {
     const fig = props.figureFn();
-    if (params.renderer === Renderer.Svg && svgContainer.value) {
-        await renderAsSvg(svgContainer.value, fig, 'catppuccin-mocha');
+    const style = settings.theme || 'light';
+    if (settings.renderer === 'SVG' && svgContainer.value) {
+        await renderAsSvg(svgContainer.value, fig, style);
     }
-    if (params.renderer === Renderer.Png && pngImage.value) {
-        await renderToImg(pngImage.value, fig, 'catppuccin-mocha');
+    if (settings.renderer === 'PNG' && pngImage.value) {
+        await renderToImg(pngImage.value, fig, style);
     }
 }
 
@@ -36,67 +37,34 @@ onMounted(() => {
     void drawFigure();
 });
 
-watch(() => params.renderer, () => {
+watch(() => settings.renderer, () => {
+    void drawFigure();
+});
+watch(() => settings.theme, () => {
     void drawFigure();
 });
 
 </script>
 
 <template>
-    <section class="example">
-        <h2>{{ props.name }}</h2>
-        <div class="content">
-            <div class="figure" aria-label="figure preview">
-                <div v-show="params.renderer === 'svg'" ref="svgContainer"></div>
-                <img v-show="params.renderer === 'png'" ref="pngImage" alt="figure render" />
+    <section class="mb-8">
+        <h2 class="text-lg">{{ props.name }}</h2>
+        <div class="grid items-start gap-4 min-[960px]:grid-cols-[minmax(280px,1fr)_minmax(320px,1fr)]">
+            <div
+                class="min-h-56 p-3 text-center [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+                aria-label="figure preview"
+            >
+                <div v-show="settings.renderer === 'SVG'" ref="svgContainer"></div>
+                <img
+                    v-show="settings.renderer === 'PNG'"
+                    ref="pngImage"
+                    alt="figure render"
+                    class="mx-auto block max-w-full"
+                />
             </div>
-            <pre class="code"><code class="hljs language-typescript" v-html="highlightedCode"></code></pre>
+            <pre class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl">
+                <code class="hljs language-typescript rounded-xl" v-html="highlightedCode"></code>
+            </pre>
         </div>
     </section>
 </template>
-
-<style scoped>
-.example {
-    margin-bottom: 2rem;
-}
-
-.content {
-    display: grid;
-    grid-template-columns: minmax(280px, 1fr) minmax(320px, 1fr);
-    gap: 1rem;
-    align-items: start;
-}
-
-.figure {
-    padding: 0.75rem;
-    min-height: 220px;
-    text-align: center;
-}
-
-.figure img {
-    max-width: 100%;
-    display: block;
-    margin: auto;
-}
-
-.figure :deep(svg) {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: auto;
-}
-
-.code {
-    margin: 0;
-    padding: 0.75rem;
-    overflow: auto;
-    font-size: 0.875rem;
-    line-height: 1.4;
-}
-
-@media (max-width: 960px) {
-    .content {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
