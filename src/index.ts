@@ -3,9 +3,7 @@ import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
 import { normalizeFig } from './norm.js';
-
-declare const __PLOTIVE_RUNTIME_TARGET__: "web" | "node";
-declare const __PLOTIVE_WASM_NODE_PATH__: string;
+import { getWasmApi } from "./wasm-api";
 
 export type Size = [number, number];
 
@@ -98,59 +96,6 @@ export interface Figure {
     padding?: Padding;
     fill?: ThemeColor | ThemeFill;
     legend?: FigLegendPos | FigLegend;
-}
-
-type WasmApi = {
-    render_to_svg_string: (fig: Figure) => string;
-    render_to_png_data_url: (fig: Figure) => string;
-    set_panic_hook: () => void;
-};
-
-type WasmWebModule = WasmApi & {
-    default: () => Promise<unknown>;
-};
-
-let wasmApiPromise: Promise<WasmApi> | null = null;
-
-async function loadWasmApi(): Promise<WasmApi> {
-    if (__PLOTIVE_RUNTIME_TARGET__ === "node") {
-        const { createRequire } = await import("node:module");
-        const require = createRequire(import.meta.url);
-        const wasmNode = require(__PLOTIVE_WASM_NODE_PATH__) as WasmApi;
-        wasmNode.set_panic_hook();
-        return wasmNode;
-    }
-
-    const wasmWeb = (await import("./wasm/plotive_wasm.js")) as WasmWebModule;
-    await wasmWeb.default();
-    wasmWeb.set_panic_hook();
-    return wasmWeb;
-}
-
-let initPromise: Promise<void> | null = null;
-
-function initOnce(): Promise<void> {
-    if (!initPromise) {
-        initPromise = (async () => {
-            try {
-                wasmApiPromise = loadWasmApi();
-                await wasmApiPromise;
-            } catch (err) {
-                initPromise = null;
-                wasmApiPromise = null;
-                throw err;
-            }
-        })();
-    }
-    return initPromise;
-}
-
-async function getWasmApi(): Promise<WasmApi> {
-    await initOnce();
-    if (!wasmApiPromise) {
-        throw new Error("WASM runtime is not initialized");
-    }
-    return wasmApiPromise;
 }
 
 export async function renderToSvgString(fig: Figure): Promise<string> {
