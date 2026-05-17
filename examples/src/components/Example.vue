@@ -79,6 +79,13 @@ watch(() => params.renderer, () => {
     margin: auto;
 }
 
+.figure :deep(svg) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
 .code {
     margin: 0;
     padding: 0.75rem;
