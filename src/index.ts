@@ -1,10 +1,11 @@
-import init, { render_to_svg_string, render_to_png_data_url, set_panic_hook } from './wasm/plotive_wasm.js'
 import { ThemeColor, ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
 import { normalizeFig } from './norm.js';
-import { createRuntime } from './runtime';
+
+declare const __PLOTIVE_RUNTIME_TARGET__: "web" | "node";
+declare const __PLOTIVE_WASM_NODE_PATH__: string;
 
 export type Size = [number, number];
 
@@ -99,16 +100,44 @@ export interface Figure {
     legend?: FigLegendPos | FigLegend;
 }
 
+type WasmApi = {
+    render_to_svg_string: (fig: Figure) => string;
+    render_to_png_data_url: (fig: Figure) => string;
+    set_panic_hook: () => void;
+};
+
+type WasmWebModule = WasmApi & {
+    default: () => Promise<unknown>;
+};
+
+let wasmApiPromise: Promise<WasmApi> | null = null;
+
+async function loadWasmApi(): Promise<WasmApi> {
+    if (__PLOTIVE_RUNTIME_TARGET__ === "node") {
+        const { createRequire } = await import("node:module");
+        const require = createRequire(import.meta.url);
+        const wasmNode = require(__PLOTIVE_WASM_NODE_PATH__) as WasmApi;
+        wasmNode.set_panic_hook();
+        return wasmNode;
+    }
+
+    const wasmWeb = (await import("./wasm/plotive_wasm.js")) as WasmWebModule;
+    await wasmWeb.default();
+    wasmWeb.set_panic_hook();
+    return wasmWeb;
+}
+
 let initPromise: Promise<void> | null = null;
 
 function initOnce(): Promise<void> {
     if (!initPromise) {
         initPromise = (async () => {
             try {
-                await init();
-                set_panic_hook();
+                wasmApiPromise = loadWasmApi();
+                await wasmApiPromise;
             } catch (err) {
                 initPromise = null;
+                wasmApiPromise = null;
                 throw err;
             }
         })();
@@ -116,14 +145,32 @@ function initOnce(): Promise<void> {
     return initPromise;
 }
 
-const runtime = createRuntime<Figure>({
-    init: initOnce,
-    normalize: normalizeFig,
-    renderToSvg: render_to_svg_string,
-    renderToPng: render_to_png_data_url,
-});
+async function getWasmApi(): Promise<WasmApi> {
+    await initOnce();
+    if (!wasmApiPromise) {
+        throw new Error("WASM runtime is not initialized");
+    }
+    return wasmApiPromise;
+}
 
-export const renderAsSvg = runtime.renderAsSvg;
-export const renderToSvgString = runtime.renderToSvgString;
-export const renderToImg = runtime.renderToImg;
-export const renderToPngDataUrl = runtime.renderToPngDataUrl;
+export async function renderToSvgString(fig: Figure): Promise<string> {
+    const normalized = normalizeFig(fig);
+    const wasm = await getWasmApi();
+    return wasm.render_to_svg_string(normalized);
+}
+
+export async function renderToPngDataUrl(fig: Figure): Promise<string> {
+    const normalized = normalizeFig(fig);
+    const wasm = await getWasmApi();
+    return wasm.render_to_png_data_url(normalized);
+}
+
+export async function renderAsSvg(elem: Element, fig: Figure): Promise<void> {
+    const svg = await renderToSvgString(fig);
+    elem.innerHTML = svg;
+}
+
+export async function renderToImg(elem: HTMLImageElement, fig: Figure): Promise<void> {
+    const dataUrl = await renderToPngDataUrl(fig);
+    elem.src = dataUrl;
+}
