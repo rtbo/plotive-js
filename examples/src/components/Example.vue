@@ -25,10 +25,10 @@ const highlightedCode = computed(() => {
 async function drawFigure() {
     const fig = props.figureFn();
     if (params.renderer === Renderer.Svg && svgContainer.value) {
-        await renderAsSvg(svgContainer.value, fig);
+        await renderAsSvg(svgContainer.value, fig, 'catppuccin-mocha');
     }
     if (params.renderer === Renderer.Png && pngImage.value) {
-        await renderToImg(pngImage.value, fig);
+        await renderToImg(pngImage.value, fig, 'catppuccin-mocha');
     }
 }
 

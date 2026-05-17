@@ -34,6 +34,18 @@ macro_rules! js_err {
 
 pub(crate) use js_err;
 
+#[allow(unused_macros)]
+macro_rules! console_log {
+    ($($arg:tt)*) => {
+        web_sys::console::log_1(&format!($($arg)*).into());
+    };
+}
+
+#[allow(unused_imports)]
+pub(crate) use console_log;
+
+
+
 #[wasm_bindgen]
 extern "C" {
     fn alert(s: &str);
@@ -52,11 +64,12 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn render_to_svg_string(fig: JsValue) -> Result<String, JsError> {
+pub fn render_to_svg_string(fig: JsValue, style: JsValue) -> Result<String, JsError> {
     let fig = js_fig::extract_figure(&fig)?;
+    let style = js_style::extract_style(&style)?;
     let mut surf = plotive_svg::SvgSurface::new(800, 600);
     let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
-    fig.draw(&mut surf, &Default::default());
+    fig.draw(&mut surf, &style);
     let mut svg_str = Vec::new();
     surf.write(&mut svg_str).map_err(|e| js_err!("{}", e))?;
     let svg_str = String::from_utf8(svg_str).map_err(|e| js_err!("{}", e))?;
@@ -64,13 +77,17 @@ pub fn render_to_svg_string(fig: JsValue) -> Result<String, JsError> {
 }
 
 #[wasm_bindgen]
-pub fn render_to_png_data_url(fig: JsValue) -> Result<String, JsError> {
+pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, JsError> {
     use base64::prelude::*;
     use plotive_pxl::PxlRender;
 
     let fig = js_fig::extract_figure(&fig)?;
-    let png_data = fig.to_png_data(&(), Default::default())
-        .map_err(|e| js_err!("{}", e))?;
+    let style = js_style::extract_style(&style)?;
+    let params = plotive_pxl::Params {
+        style,
+        ..Default::default()
+    };
+    let png_data = fig.to_png_data(&(), params).map_err(|e| js_err!("{}", e))?;
 
     Ok(format!(
         "data:image/png;base64,{}",

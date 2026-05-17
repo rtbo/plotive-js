@@ -1,4 +1,4 @@
-import { ThemeColor, ThemeFill, ThemeStroke } from "./style";
+import { BuiltinStyleName, Style, ThemeColor, ThemeFill, ThemeStroke } from "./style";
 import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
@@ -98,24 +98,24 @@ export interface Figure {
     legend?: FigLegendPos | FigLegend;
 }
 
-export async function renderToSvgString(fig: Figure): Promise<string> {
+export async function renderToSvgString(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
     const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
-    return wasm.render_to_svg_string(normalized);
+    return wasm.render_to_svg_string(normalized, style);
 }
 
-export async function renderToPngDataUrl(fig: Figure): Promise<string> {
+export async function renderToPngDataUrl(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
     const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
-    return wasm.render_to_png_data_url(normalized);
+    return wasm.render_to_png_data_url(normalized, style);
 }
 
-export async function renderAsSvg(elem: Element, fig: Figure): Promise<void> {
-    const svg = await renderToSvgString(fig);
+export async function renderAsSvg(elem: Element, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
+    const svg = await renderToSvgString(fig, style);
     elem.innerHTML = svg;
 }
 
-export async function renderToImg(elem: HTMLImageElement, fig: Figure): Promise<void> {
-    const dataUrl = await renderToPngDataUrl(fig);
+export async function renderToImg(elem: HTMLImageElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
+    const dataUrl = await renderToPngDataUrl(fig, style);
     elem.src = dataUrl;
 }
