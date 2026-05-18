@@ -13,9 +13,9 @@ import { computed } from 'vue';
 
 const settings = useSettingsStore();
 
-const mode = computed({
+const darkMode = computed({
   get: () => settings.darkMode ? 'dark' : 'light',
-  set: (value: string) => settings.darkMode = value === 'dark'
+  set: (value: string) => settings.setDarkMode(value === 'dark')
 });
 
 const THEME_LABELS = [
@@ -37,13 +37,13 @@ const currentTheme = computed({
 
 <template>
   <div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-surface-200 bg-white/90 shadow-sm backdrop-blur">
+    <header class="sticky top-0 z-50 border-b border-surface-200 shadow-sm backdrop-blur">
       <div class="mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <h1 class="text-xl font-semibold tracking-tight">Plotive examples</h1>
         <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <Select v-model="currentTheme" :options="themes" />
           <SelectButton v-model="settings.renderer" :options="['PNG', 'SVG']" />
-          <SelectButton v-model="mode" :options="['light', 'dark']" />
+          <SelectButton v-model="darkMode" :options="['light', 'dark']" />
         </div>
       </div>
     </header>
