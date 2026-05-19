@@ -37,8 +37,9 @@ const currentTheme = computed({
 
 <template>
   <div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-surface-200 shadow-sm backdrop-blur">
-      <div class="mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+    <header class="app-header sticky top-0 z-50 border-b border-surface-200 shadow-sm backdrop-blur">
+      <div class="app-header__overlay" aria-hidden="true"></div>
+      <div class="relative mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <h1 class="text-xl font-semibold tracking-tight">Plotive examples</h1>
         <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <Select v-model="currentTheme" :options="themes" />
@@ -55,4 +56,16 @@ const currentTheme = computed({
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-header {
+  isolation: isolate;
+}
+
+.app-header__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--p-content-background) 70%, transparent);
+  pointer-events: none;
+}
+</style>
