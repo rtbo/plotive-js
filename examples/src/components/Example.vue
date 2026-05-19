@@ -4,7 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { renderAsSvg, renderToImg, type Figure } from 'plotive';
 import hljs from 'highlight.js/lib/core';
 import ts from 'highlight.js/lib/languages/typescript';
-import 'highlight.js/styles/github-dark-dimmed.css';
+import '@/dracula.css';
 
 hljs.registerLanguage('typescript', ts);
 
