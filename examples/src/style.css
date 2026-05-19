@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+html, body, #app {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--p-content-background);
+    color: var(--p-text-color);
+}
