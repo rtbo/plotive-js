@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import Example from './components/Example.vue';
-import sineFigure from './figs/sine';
-import multipleAxesFigure from './figs/multiple-axes';
-import sineCode from './figs/sine.ts?raw';
-import multipleAxesCode from './figs/multiple-axes.ts?raw';
 import { BUILTIN_STYLES, type BuiltinStyleName } from 'plotive';
 import SelectButton from 'primevue/selectbutton';
 import Select from 'primevue/select';
+
+import sineFigure from './figs/sine';
+import sineCode from './figs/sine.ts?raw';
+import multipleAxesFigure from './figs/multiple-axes';
+import multipleAxesCode from './figs/multiple-axes.ts?raw';
+import subplotsFigure from './figs/subplots';
+import subplotsCode from './figs/subplots.ts?raw';
+import irisFigure from './figs/iris';
+import irisCode from './figs/iris.ts?raw';
+import cmapFigure from './figs/colormap';
+import cmapCode from './figs/colormap.ts?raw';
 
 import { useSettingsStore } from './stores/settings';
 import { computed } from 'vue';
@@ -50,8 +57,11 @@ const currentTheme = computed({
     </header>
 
     <main class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-      <Example name="Sine" :figure-fn="sineFigure" :figure-code="sineCode" />
+      <Example name="Simple Figure" :figure-fn="sineFigure" :figure-code="sineCode" />
       <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
+      <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
+      <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
+      <Example name="Colormap with Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
     </main>
   </div>
 </template>

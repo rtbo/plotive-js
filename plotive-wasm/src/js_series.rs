@@ -5,7 +5,9 @@ use plotive::{
 };
 use wasm_bindgen::{JsCast, JsValue};
 
-use crate::{JsErr, extract_number_prop_if_defined, get_prop_if_defined, js_axis, js_err, js_style};
+use crate::{
+    extract_number_prop_if_defined, get_prop_if_defined, js_axis, js_err, js_style, JsErr,
+};
 
 pub fn extract_series(js_ser: &JsValue) -> Result<des::Series, JsErr> {
     let js_type = get_prop_if_defined(js_ser, "type")
@@ -242,7 +244,6 @@ fn extract_scatter_series(js_ser: &JsValue) -> Result<des::series::Scatter, JsEr
         let marker = js_style::extract_series_marker(&js_marker)?;
         scatter = scatter.with_marker(marker);
     }
-
     Ok(scatter)
 }
 

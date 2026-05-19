@@ -416,6 +416,7 @@ fn extract_colorbar(js_cbar: &JsValue) -> Result<des::ColorBar, JsErr> {
             .as_string()
             .ok_or_else(|| js_err!("'colorbar.pos' property must be a string if defined"))?;
         let pos = match pos_str.as_str() {
+            "auto" => des::colorbar::Pos::default(),
             "right" => des::colorbar::Pos::Right,
             "left" => des::colorbar::Pos::Left,
             "top" => des::colorbar::Pos::Top,

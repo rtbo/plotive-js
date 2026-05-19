@@ -1,7 +1,7 @@
 use plotive::{style, Rgba8};
 use wasm_bindgen::JsValue;
 
-use crate::{JsErr, extract_number_prop_if_defined, get_prop_if_defined, js_err};
+use crate::{extract_number_prop_if_defined, get_prop_if_defined, js_err, JsErr};
 
 pub fn extract_color(js_col: &JsValue) -> Result<Rgba8, JsErr> {
     if let Some(col) = js_col.as_string() {
@@ -308,13 +308,16 @@ where
         style::MarkerShape::Circle
     };
 
-    let size = if let Some(s) = get_prop_if_defined(js_marker, "size") {
-        s.as_f64()
-            .ok_or_else(|| js_err!("'size' property must be a number"))? as f32
-    } else {
-        5.0
-    }
-    .into();
+    let size = get_prop_if_defined(js_marker, "size")
+        .map(|s| {
+            s.as_f64()
+                .ok_or_else(|| js_err!("'size' property must be a number"))
+                .map(|s| s as f32)
+                .map(style::MarkerSize)
+        })
+        .transpose()?
+        .unwrap_or_default();
+
     Ok(style::Marker {
         shape,
         size,
@@ -325,15 +328,25 @@ where
 
 pub fn extract_series_marker(js_marker: &JsValue) -> Result<style::series::Marker, JsErr> {
     let fill = if let Some(js_fill) = get_prop_if_defined(js_marker, "fill") {
-        Some(extract_series_fill(&js_fill)?)
+        if js_fill.is_null() {
+            None
+        } else {
+            Some(extract_series_fill(&js_fill)?)
+        }
     } else {
-        None
+        Some(Default::default())
     };
+
     let stroke = if let Some(js_stroke) = get_prop_if_defined(js_marker, "stroke") {
-        Some(extract_series_stroke(&js_stroke)?)
+        if js_stroke.is_null() {
+            None
+        } else {
+            Some(extract_series_stroke(&js_stroke)?)
+        }
     } else {
-        None
+        Some(Default::default())
     };
+
     extract_marker(js_marker, fill, stroke).map(Into::into)
 }
 

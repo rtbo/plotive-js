@@ -23,10 +23,10 @@ export interface LogScale {
 
 export interface SharedScale {
     type: "shared";
-    ref?: Ref;
+    ref: Ref;
 }
 
-export type ScaleType = "auto" | "lin" | "log" | "shared";
+export type ScaleType = "auto" | "lin" | "log";
 
 export type Scale = [number | null, number | null] | AutoScale | LinScale | LogScale | SharedScale;
 

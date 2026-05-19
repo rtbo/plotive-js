@@ -7,6 +7,7 @@ import { getWasmApi } from "./wasm-api";
 
 export { BUILTIN_STYLES } from "./style";
 export type { BuiltinStyleName, Style, Theme, Palette } from "./style";
+export type { LerpMethod, ColorMap, BuiltinCmap } from "./cmap";
 
 export type Size = [number, number];
 
