@@ -48,10 +48,12 @@ watch(() => settings.theme, () => {
 
 <template>
     <section class="mb-8">
-        <h2 class="text-lg">{{ props.name }}</h2>
-        <div class="grid items-start gap-4 min-[960px]:grid-cols-[minmax(280px,1fr)_minmax(320px,1fr)]">
+        <div
+            class="grid items-start gap-4 lg:grid-cols-[minmax(280px,1fr)_minmax(320px,1fr)] lg:grid-rows-[auto_1fr]"
+        >
+            <h2 class="text-lg lg:col-start-1 lg:row-start-1">{{ props.name }}</h2>
             <div
-                class="min-h-56 p-3 text-center [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+                class="min-h-56 p-3 text-center lg:col-start-1 lg:row-start-2 [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
                 aria-label="figure preview"
             >
                 <div v-show="settings.renderer === 'SVG'" ref="svgContainer"></div>
@@ -62,7 +64,9 @@ watch(() => settings.theme, () => {
                     class="mx-auto block max-w-full"
                 />
             </div>
-            <pre class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl">
+            <pre
+                class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl self-start lg:col-start-2 lg:row-start-1 lg:row-span-2"
+            >
                 <code class="hljs language-typescript rounded-xl" v-html="highlightedCode"></code>
             </pre>
         </div>
