@@ -67,7 +67,9 @@ pub fn set_panic_hook() {
 pub fn render_to_svg_string(fig: JsValue, style: JsValue) -> Result<String, JsError> {
     let fig = js_fig::extract_figure(&fig)?;
     let style = js_style::extract_style(&style)?;
-    let mut surf = plotive_svg::SvgSurface::new(800, 600);
+    let width = fig.size().width() as u32;
+    let height = fig.size().height() as u32;
+    let mut surf = plotive_svg::SvgSurface::new(width, height);
     let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
     fig.draw(&mut surf, &style);
     let mut svg_str = Vec::new();

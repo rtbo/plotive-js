@@ -7,6 +7,10 @@ export default function (): Figure {
     const y2 = x1.map(x => -Math.sin(x * x));
 
     return {
+        size: {
+            width: 800,
+            height: 1000,
+        },
         plots: [
             {
                 series: {

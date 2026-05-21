@@ -34,6 +34,11 @@ pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsErr> {
 
     let mut fig = des::Figure::new(plots);
 
+    if let Some(js_size) = get_prop_if_defined(js_fig, "size") {
+        let size = extract_size(&js_size)?;
+        fig = fig.with_size(size);
+    }
+
     if let Some(js_fill) = get_prop_if_defined(js_fig, "fill") {
         let fill = if js_fill.is_null() {
             None
@@ -62,6 +67,36 @@ pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsErr> {
     }
 
     Ok(fig)
+}
+
+fn extract_size(js_size: &JsValue) -> Result<geom::Size, JsErr> {
+    if js_size.is_array() {
+        let js_size = js_sys::Array::from(js_size);
+        if js_size.length() != 2 {
+            return Err(js_err!("Size array must have length 2"));
+        }
+        let w = js_size
+            .get(0)
+            .as_f64()
+            .ok_or_else(|| js_err!("Size array must contain numeric values"))?
+            as f32;
+        let h = js_size
+            .get(1)
+            .as_f64()
+            .ok_or_else(|| js_err!("Size array must contain numeric values"))?
+            as f32;
+        Ok(geom::Size::new(w, h))
+    } else if js_size.is_object() {
+        let w = get_prop_if_defined(js_size, "width")
+            .and_then(|v| v.as_f64().map(|f| f as f32))
+            .ok_or_else(|| js_err!("Size object must have numeric 'width' property"))?;
+        let h = get_prop_if_defined(js_size, "height")
+            .and_then(|v| v.as_f64().map(|f| f as f32))
+            .ok_or_else(|| js_err!("Size object must have numeric 'height' property"))?;
+        Ok(geom::Size::new(w, h))
+    } else {
+        Err(js_err!("Size must be a an array of two numbers (width and height) or an object with 'width' and 'height' properties"))
+    }
 }
 
 fn extract_row_col(js_subplots: JsValue) -> Result<(u32, u32), JsErr> {
