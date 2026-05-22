@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/settings';
-import { computed, onMounted, ref, watch } from 'vue';
-import { renderAsSvg, renderToImg, type Figure } from 'plotive';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import type { Figure } from 'plotive';
 import hljs from 'highlight.js/lib/core';
 import ts from 'highlight.js/lib/languages/typescript';
 import '@/dracula.css';
+import RenderWorker from '@/workers/render.worker?worker';
+import type { RenderRequest, RenderResponse } from '@/workers/render.worker';
 
 hljs.registerLanguage('typescript', ts);
 
@@ -18,23 +20,45 @@ const settings = useSettingsStore();
 const svgContainer = ref<HTMLElement | null>(null);
 const pngImage = ref<HTMLImageElement | null>(null);
 
+const worker = new RenderWorker();
+let renderGeneration = 0;
+
 const highlightedCode = computed(() => {
     return hljs.highlight(props.figureCode, { language: 'typescript' }).value;
 });
 
 async function drawFigure() {
+    const generation = ++renderGeneration;
     const fig = props.figureFn();
     const style = settings.theme || 'light';
-    if (settings.renderer === 'SVG' && svgContainer.value) {
-        await renderAsSvg(svgContainer.value, fig, style);
+    const renderer = settings.renderer;
+
+    const response = await new Promise<RenderResponse>((resolve) => {
+        const handler = (e: MessageEvent<RenderResponse>) => {
+            worker.removeEventListener('message', handler);
+            resolve(e.data);
+        };
+        worker.addEventListener('message', handler);
+        worker.postMessage({ fig, style, renderer } satisfies RenderRequest);
+    });
+
+    if (generation !== renderGeneration) return;
+    if ('error' in response) { console.error(response.error); return; }
+
+    if (renderer === 'SVG' && svgContainer.value) {
+        svgContainer.value.innerHTML = response.result;
     }
-    if (settings.renderer === 'PNG' && pngImage.value) {
-        await renderToImg(pngImage.value, fig, style);
+    if (renderer === 'PNG' && pngImage.value) {
+        pngImage.value.src = response.result;
     }
 }
 
 onMounted(() => {
     void drawFigure();
+});
+
+onUnmounted(() => {
+    worker.terminate();
 });
 
 watch(() => settings.renderer, () => {
