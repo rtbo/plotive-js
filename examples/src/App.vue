@@ -61,7 +61,7 @@ const currentTheme = computed({
       <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
       <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
-      <Example name="Colormap with Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
+      <Example name="Colormap and Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
     </main>
   </div>
 </template>
