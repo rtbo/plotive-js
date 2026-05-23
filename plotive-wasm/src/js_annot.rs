@@ -2,7 +2,13 @@ use plotive::des;
 use wasm_bindgen::{JsCast, JsValue};
 
 use crate::{
-    JsErr, extract_array_prop_if_defined, extract_number_prop, extract_number_prop_if_defined, extract_string_prop, extract_string_prop_if_defined, extract_type, get_prop_if_defined, js_axis, js_err, js_style::{extract_stroke_pattern, extract_theme_color, extract_theme_marker, extract_theme_stroke}
+    extract_array_prop, extract_array_prop_if_defined, extract_number_prop_if_defined,
+    extract_string_prop, extract_string_prop_if_defined, extract_type, get_prop_if_defined,
+    js_axis, js_err,
+    js_style::{
+        extract_stroke_pattern, extract_theme_color, extract_theme_marker, extract_theme_stroke,
+    },
+    JsErr,
 };
 
 pub fn extract_annot(js_annot: &JsValue) -> Result<des::Annotation, JsErr> {
@@ -36,23 +42,42 @@ pub fn extract_annot(js_annot: &JsValue) -> Result<des::Annotation, JsErr> {
     Ok(annot)
 }
 
+fn extract_xy(js_annot: &JsValue, prop_name: &str) -> Result<(f64, f64), JsErr> {
+    let js_xy = extract_array_prop(js_annot, prop_name)?;
+    let x = js_xy.get(0).as_f64().ok_or_else(|| {
+        js_err!(
+            "First element of '{}' array must be a number (x coordinate).",
+            prop_name
+        )
+    })?;
+    let y = js_xy.get(1).as_f64().ok_or_else(|| {
+        js_err!(
+            "Second element of '{}' array must be a number (y coordinate).",
+            prop_name
+        )
+    })?;
+    Ok((x, y))
+}
+
 fn extract_line_annot(js_annot: &JsValue) -> Result<des::annot::Line, JsErr> {
     let mut line = if let Some(y) = extract_number_prop_if_defined(js_annot, "horizontal")? {
         des::annot::Line::horizontal(y)
     } else if let Some(x) = extract_number_prop_if_defined(js_annot, "vertical")? {
         des::annot::Line::vertical(x)
     } else if let Some(js_slope) = get_prop_if_defined(js_annot, "slope") {
-        let js_slope = js_slope.dyn_ref::<js_sys::Array>().ok_or_else(|| {
-            js_err!("'slope' property must be an array of [[x, y], slope].")
-        })?;
+        let js_slope = js_slope
+            .dyn_ref::<js_sys::Array>()
+            .ok_or_else(|| js_err!("'slope' property must be an array of [[x, y], slope]."))?;
         if js_slope.length() != 2 {
-            return Err(js_err!("'slope' array must have exactly 2 elements ([[x, y], slope])."));
+            return Err(js_err!(
+                "'slope' array must have exactly 2 elements ([[x, y], slope])."
+            ));
         }
         let js_point = js_slope.get(0);
         let js_slope = js_slope.get(1);
-        let js_point = js_point.dyn_ref::<js_sys::Array>().ok_or_else(|| {
-            js_err!("First element of 'slope' array must be an array [x, y].")
-        })?;
+        let js_point = js_point
+            .dyn_ref::<js_sys::Array>()
+            .ok_or_else(|| js_err!("First element of 'slope' array must be an array [x, y]."))?;
         let x = js_point.get(0).as_f64().ok_or_else(|| {
             js_err!("First element of 'slope' point array must be a number (x coordinate).")
         })?;
@@ -63,36 +88,40 @@ fn extract_line_annot(js_annot: &JsValue) -> Result<des::annot::Line, JsErr> {
             js_err!("Second element of 'slope' array must be a number (the slope).")
         })? as f32;
         des::annot::Line::slope(x, y, slope)
-    } else if let Some(js_two_points) = get_prop_if_defined(js_annot, "two_points") {
-        let js_two_points = js_two_points.dyn_ref::<js_sys::Array>().ok_or_else(|| {
-            js_err!("'two_points' property must be an array of [[x, y], [x, y]].")
-        })?;
+    } else if let Some(js_two_points) = get_prop_if_defined(js_annot, "twoPoints") {
+        let js_two_points = js_two_points
+            .dyn_ref::<js_sys::Array>()
+            .ok_or_else(|| js_err!("'twoPoints' property must be an array of [[x, y], [x, y]]."))?;
         if js_two_points.length() != 2 {
-            return Err(js_err!("'two_points' array must have exactly 2 elements ([[x, y], [x, y]])."));
+            return Err(js_err!(
+                "'twoPoints' array must have exactly 2 elements ([[x, y], [x, y]])."
+            ));
         }
-        let js_p1 = js_two_points.get(0).dyn_into::<js_sys::Array>().map_err(|_| {
-            js_err!("First element of 'two_points' array must be an array [x, y].")
-        })?;
-        let js_p2 = js_two_points.get(1).dyn_into::<js_sys::Array>().map_err(|_| {
-            js_err!("Second element of 'two_points' array must be an array [x, y].")
-        })?;
+        let js_p1 = js_two_points
+            .get(0)
+            .dyn_into::<js_sys::Array>()
+            .map_err(|_| js_err!("First element of 'twoPoints' array must be an array [x, y]."))?;
+        let js_p2 = js_two_points
+            .get(1)
+            .dyn_into::<js_sys::Array>()
+            .map_err(|_| js_err!("Second element of 'twoPoints' array must be an array [x, y]."))?;
         let x1 = js_p1.get(0).as_f64().ok_or_else(|| {
-            js_err!("First element of first point in 'two_points' array must be a number (x coordinate).")
+            js_err!("First element of first point in 'twoPoints' array must be a number (x coordinate).")
         })?;
         let y1 = js_p1.get(1).as_f64().ok_or_else(|| {
-            js_err!("Second element of first point in 'two_points' array must be a number (y coordinate).")
+            js_err!("Second element of first point in 'twoPoints' array must be a number (y coordinate).")
         })?;
         let x2 = js_p2.get(0).as_f64().ok_or_else(|| {
-            js_err!("First element of second point in 'two_points' array must be a number (x coordinate).")
+            js_err!("First element of second point in 'twoPoints' array must be a number (x coordinate).")
         })?;
         let y2 = js_p2.get(1).as_f64().ok_or_else(|| {
-            js_err!("Second element of second point in 'two_points' array must be a number (y coordinate).")
+            js_err!("Second element of second point in 'twoPoints' array must be a number (y coordinate).")
         })?;
 
         des::annot::Line::two_points(x1, y1, x2, y2)
     } else {
         return Err(js_err!(
-            "Line annotation must have either 'horizontal', 'vertical', 'slope' or 'two_points' attribute.",
+            "Line annotation must have either 'horizontal', 'vertical', 'slope' or 'twoPoints' attribute.",
         ));
     };
 
@@ -110,11 +139,9 @@ fn extract_line_annot(js_annot: &JsValue) -> Result<des::annot::Line, JsErr> {
 }
 
 fn extract_arrow_annot(js_annot: &JsValue) -> Result<des::annot::Arrow, JsErr> {
-    let x = extract_number_prop(js_annot, "x")?;
-    let y = extract_number_prop(js_annot, "y")?;
-    let dx = extract_number_prop(js_annot, "dx")? as f32;
-    let dy = extract_number_prop(js_annot, "dy")? as f32;
-    let mut arrow = des::annot::Arrow::new(x, y, dx, dy);
+    let (x, y) = extract_xy(js_annot, "xy")?;
+    let (dx, dy) = extract_xy(js_annot, "dxy")?;
+    let mut arrow = des::annot::Arrow::new(x, y, dx as f32, dy as f32);
     if let Some(head_size) = extract_number_prop_if_defined(js_annot, "head_size")? {
         arrow = arrow.with_head_size(head_size as f32);
     }
@@ -126,8 +153,7 @@ fn extract_arrow_annot(js_annot: &JsValue) -> Result<des::annot::Arrow, JsErr> {
 }
 
 fn extract_marker_annot(js_annot: &JsValue) -> Result<des::annot::Marker, JsErr> {
-    let x = extract_number_prop(js_annot, "x")?;
-    let y = extract_number_prop(js_annot, "y")?;
+    let (x, y) = extract_xy(js_annot, "xy")?;
     let mut annot = des::annot::Marker::new(x, y);
 
     if let Some(js_marker) = get_prop_if_defined(js_annot, "marker") {
@@ -138,8 +164,7 @@ fn extract_marker_annot(js_annot: &JsValue) -> Result<des::annot::Marker, JsErr>
 }
 
 fn extract_label_annot(js_annot: &JsValue) -> Result<des::annot::Label, JsErr> {
-    let x = extract_number_prop(js_annot, "x")?;
-    let y = extract_number_prop(js_annot, "y")?;
+    let (x, y) = extract_xy(js_annot, "xy")?;
     let text = extract_string_prop(js_annot, "text")?;
 
     let mut label = des::annot::Label::new(text, x, y);
@@ -169,7 +194,9 @@ fn extract_label_annot(js_annot: &JsValue) -> Result<des::annot::Label, JsErr> {
     }
     if let Some(js_frame) = extract_array_prop_if_defined(js_annot, "frame")? {
         if js_frame.length() != 2 {
-            return Err(js_err!("'frame' array must have exactly 2 elements [fill, stroke]."));
+            return Err(js_err!(
+                "'frame' array must have exactly 2 elements [fill, stroke]."
+            ));
         }
 
         let js_fill = js_frame.get(0);

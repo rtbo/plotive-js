@@ -125,13 +125,6 @@ fn extract_string_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option
         .transpose()
 }
 
-fn extract_number_prop(js_obj: &JsValue, prop: &str) -> Result<f64, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .ok_or_else(|| js_err!("'{}' property is required.", prop))?
-        .as_f64()
-        .ok_or_else(|| js_err!("'{}' property must be a number.", prop))
-}
-
 fn extract_number_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option<f64>, JsErr> {
     get_prop_if_defined(js_obj, prop)
         .map(|v| {
@@ -139,6 +132,16 @@ fn extract_number_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option
                 .ok_or_else(|| js_err!("'{}' property must be a number.", prop))
         })
         .transpose()
+}
+
+fn extract_array_prop(
+    js_obj: &JsValue,
+    prop: &str,
+) -> Result<js_sys::Array, JsErr> {
+    get_prop_if_defined(js_obj, prop)
+        .ok_or_else(|| js_err!("'{}' property is required.", prop))?
+        .dyn_into::<js_sys::Array>()
+        .map_err(|_| js_err!("'{}' property must be an array.", prop))
 }
 
 fn extract_array_prop_if_defined(

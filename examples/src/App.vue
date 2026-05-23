@@ -14,6 +14,8 @@ import irisFigure from './figs/iris';
 import irisCode from './figs/iris.ts?raw';
 import cmapFigure from './figs/colormap';
 import cmapCode from './figs/colormap.ts?raw';
+import bodeFigure from './figs/bode-rlc';
+import bodeCode from './figs/bode-rlc.ts?raw';
 
 import { useSettingsStore } from './stores/settings';
 import { computed } from 'vue';
@@ -62,6 +64,7 @@ const currentTheme = computed({
       <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
       <Example name="Colormap and Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
+      <Example name="Annotated Bode Plot" :figure-fn="bodeFigure" :figure-code="bodeCode" />
     </main>
   </div>
 </template>
