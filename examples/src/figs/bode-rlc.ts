@@ -21,12 +21,13 @@ export default function (): Figure {
             mag.push(response.magnitude);
             phase.push(response.phase);
         }
-        magSeries.push({ name: `R = ${r} Ω`, type: "line", x: freq, y: mag });
+        magSeries.push({ name: `R = ${r.toFixed(2)} Ω`, type: "line", x: freq, y: mag });
         phaseSeries.push({ type: "line", x: freq, y: phase });
     });
 
     return {
-        title: `Bode plot of RLC circuit (L = ${L * 1e3} mH, C = ${C * 1e6} µF)`,
+        title: `Bode plot of RLC circuit (L = ${(L * 1e3).toFixed(2)} mH, C = ${(C * 1e6).toFixed(2)} µF)`,
+
         legend: "right",
         plots: [
             {
