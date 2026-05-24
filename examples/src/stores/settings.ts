@@ -23,5 +23,8 @@ export const useSettingsStore = defineStore('settings', () => {
         }
     };
 
+    // Ensure the root class matches the initial OS preference on first load.
+    setDarkMode(darkMode.value);
+
     return { renderer, scale, theme, darkMode, setDarkMode }
 })
