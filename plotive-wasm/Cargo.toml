@@ -36,10 +36,13 @@ web-sys = { version = "0.3.91", features = [
     "Element",
     "HtmlCanvasElement",
     "CanvasRenderingContext2d",
+    "CanvasGradient",
     "SvgElement",
     "SvggElement",
     "SvgRectElement",
     "SvgPathElement",
+    "SvgLinearGradientElement",
+    "SvgStopElement",
     "SvgClipPathElement",
 ] }
 

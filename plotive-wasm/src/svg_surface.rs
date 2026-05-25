@@ -1,5 +1,6 @@
 use plotive::geom::{self, Transform};
 use plotive::render::{self, Surface};
+use plotive::Rgba8;
 use wasm_bindgen::JsCast;
 
 const SVG_NS: &str = "http://www.w3.org/2000/svg";
@@ -8,7 +9,7 @@ pub struct SvgSurface {
     doc: web_sys::SvgElement,
     defs: web_sys::Element,
     id_prefix: String,
-    clip_num: u32,
+    id_num: u32,
     group_stack: Vec<web_sys::SvggElement>,
 }
 
@@ -25,19 +26,28 @@ impl SvgSurface {
             .expect("failed to append defs to svg");
 
         // Keep IDs unique across the whole HTML document to avoid clip-path collisions.
-        let id_prefix = format!("plotive-{}", (js_sys::Math::random() * 1_000_000_000.0) as u32);
+        let id_prefix = format!(
+            "plotive-{}",
+            (js_sys::Math::random() * 1_000_000_000.0) as u32
+        );
 
         SvgSurface {
             doc,
             defs,
             id_prefix,
-            clip_num: 0,
+            id_num: 0,
             group_stack: vec![],
         }
     }
 }
 
 impl Surface for SvgSurface {
+    fn caps(&self) -> render::SurfaceCaps {
+        render::SurfaceCaps {
+            max_gradient_stops: usize::MAX,
+        }
+    }
+
     /// Prepare the surface for drawing, with the given width and height in plot units
     fn prepare(&mut self, size: geom::Size) {
         set_attr(
@@ -58,6 +68,14 @@ impl Surface for SvgSurface {
         set_attr(node.as_ref(), "height", "100%");
         match fill {
             render::Paint::Solid(color) => set_attr(node.as_ref(), "fill", color.html()),
+            render::Paint::LinearGradient {
+                start_pos,
+                end_pos,
+                stops,
+            } => {
+                let grad_id = self.add_linear_gradient(&doc, start_pos, end_pos, &stops);
+                set_attr(node.as_ref(), "fill", format!("url(#{})", grad_id));
+            }
         }
         self.append_node(&node);
     }
@@ -66,29 +84,29 @@ impl Surface for SvgSurface {
     fn draw_rect(&mut self, rect: &render::Rect) {
         let doc = self.owner_document();
         let node = rectangle_node(&doc, &rect.rect);
-        assign_fill(node.as_ref(), rect.fill.as_ref());
-        assign_stroke(node.as_ref(), rect.stroke.as_ref());
-        assign_transform(node.as_ref(), rect.transform);
+        self.assign_fill(node.as_ref(), rect.fill.as_ref());
+        self.assign_stroke(node.as_ref(), rect.stroke.as_ref());
+        self.assign_transform(node.as_ref(), rect.transform);
         self.append_node(&node);
     }
 
     fn draw_path(&mut self, path: &render::Path) {
         let doc = self.owner_document();
         let node = create_svg_element::<web_sys::SvgPathElement>(&doc, "path");
-        assign_fill(node.as_ref(), path.fill.as_ref());
-        assign_stroke(node.as_ref(), path.stroke.as_ref());
-        assign_transform(node.as_ref(), path.transform);
+        self.assign_fill(node.as_ref(), path.fill.as_ref());
+        self.assign_stroke(node.as_ref(), path.stroke.as_ref());
+        self.assign_transform(node.as_ref(), path.transform);
         set_attr(node.as_ref(), "d", path_data(path.path));
         self.append_node(&node);
     }
 
     fn push_clip(&mut self, clip: &render::Clip) {
         let doc = self.owner_document();
-        let clip_id = self.bump_clip_id();
+        let clip_id = self.bump_id();
         let clip_id_url = format!("url(#{})", clip_id);
 
-        let rect_node = rectangle_node(&doc, &clip.rect);
-        assign_transform(rect_node.as_ref(), clip.transform);
+        let rect_node = rectangle_node(&doc, clip.rect);
+        self.assign_transform(rect_node.as_ref(), clip.transform);
 
         let clip_node = create_svg_element::<web_sys::SvgClipPathElement>(&doc, "clipPath");
         set_attr(clip_node.as_ref(), "clipPathUnits", "userSpaceOnUse");
@@ -140,64 +158,113 @@ impl SvgSurface {
         }
     }
 
-    fn bump_clip_id(&mut self) -> String {
-        self.clip_num += 1;
-        format!("{}-clip{}", self.id_prefix, self.clip_num)
-    }
-}
-
-fn assign_transform(node: &web_sys::Element, transform: Option<&geom::Transform>) {
-    if let Some(Transform {
-        sx,
-        kx,
-        ky,
-        sy,
-        tx,
-        ty,
-    }) = transform
-    {
-        set_attr(
-            node,
-            "transform",
-            format!("matrix({sx} {ky} {kx} {sy} {tx} {ty})"),
-        );
-    }
-}
-
-fn assign_fill(node: &web_sys::Element, fill: Option<&render::Paint>) {
-    if let Some(render::Paint::Solid(color)) = fill {
-        let (rgb, opacity) = color.split_rgb_opacity();
-        set_attr(node, "fill", rgb.html());
-        if let Some(opacity) = opacity {
-            set_attr(node, "fill-opacity", opacity);
+    fn assign_transform(&mut self, node: &web_sys::Element, transform: Option<&geom::Transform>) {
+        if let Some(Transform {
+            sx,
+            kx,
+            ky,
+            sy,
+            tx,
+            ty,
+        }) = transform
+        {
+            set_attr(
+                node,
+                "transform",
+                format!("matrix({sx} {ky} {kx} {sy} {tx} {ty})"),
+            );
         }
-    } else {
-        set_attr(node, "fill", "none");
     }
-}
 
-fn assign_stroke(node: &web_sys::Element, stroke: Option<&render::Stroke>) {
-    if let Some(stroke) = stroke {
-        let (rgb, opacity) = stroke.color.split_rgb_opacity();
-        set_attr(node, "stroke", rgb.html());
-        if let Some(opacity) = opacity {
-            set_attr(node, "stroke-opacity", opacity);
-        }
-        let w = stroke.width;
-        set_attr(node, "stroke-width", w);
-        match stroke.pattern {
-            render::LinePattern::Solid => (),
-            render::LinePattern::Dash(dash) => {
-                let dasharray = dash
-                    .iter()
-                    .map(|d| (d * w).to_string())
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                set_attr(node, "stroke-dasharray", dasharray);
+    fn assign_fill(&mut self, node: &web_sys::Element, fill: Option<&render::Paint>) {
+        match fill {
+            Some(render::Paint::Solid(color)) => {
+                let (rgb, opacity) = color.split_rgb_opacity();
+                set_attr(node, "fill", rgb.html());
+                if let Some(opacity) = opacity {
+                    set_attr(node, "fill-opacity", opacity);
+                }
+            }
+            Some(render::Paint::LinearGradient {
+                start_pos,
+                end_pos,
+                stops,
+            }) => {
+                let doc = self.owner_document();
+                let grad_id = self.add_linear_gradient(&doc, *start_pos, *end_pos, stops);
+                set_attr(node, "fill", format!("url(#{grad_id})"));
+            }
+            None => {
+                set_attr(node, "fill", "none");
             }
         }
-    } else {
-        set_attr(node, "stroke", "none");
+    }
+
+    fn assign_stroke(&mut self, node: &web_sys::Element, stroke: Option<&render::Stroke>) {
+        if let Some(stroke) = stroke {
+            let (rgb, opacity) = stroke.color.split_rgb_opacity();
+            set_attr(node, "stroke", rgb.html());
+            if let Some(opacity) = opacity {
+                set_attr(node, "stroke-opacity", opacity);
+            }
+            let w = stroke.width;
+            set_attr(node, "stroke-width", w);
+            match stroke.pattern {
+                render::LinePattern::Solid => (),
+                render::LinePattern::Dash(dash) => {
+                    let dasharray = dash
+                        .iter()
+                        .map(|d| (d * w).to_string())
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    set_attr(node, "stroke-dasharray", dasharray);
+                }
+            }
+        } else {
+            set_attr(node, "stroke", "none");
+        }
+    }
+
+    fn add_linear_gradient(
+        &mut self,
+        doc: &web_sys::Document,
+        start_pos: geom::Point,
+        end_pos: geom::Point,
+        stops: &[(f32, Rgba8)],
+    ) -> String {
+        let id = self.bump_id();
+        let grad = create_svg_element::<web_sys::SvgLinearGradientElement>(doc, "linearGradient");
+        grad.set_attribute("id", &id)
+            .expect("failed to set gradient id");
+        grad.set_attribute("gradientUnits", "userSpaceOnUse")
+            .expect("failed to set gradient units");
+        grad.set_attribute("x1", &start_pos.x.to_string())
+            .expect("failed to set gradient x1");
+        grad.set_attribute("y1", &start_pos.y.to_string())
+            .expect("failed to set gradient y1");
+        grad.set_attribute("x2", &end_pos.x.to_string())
+            .expect("failed to set gradient x2");
+        grad.set_attribute("y2", &end_pos.y.to_string())
+            .expect("failed to set gradient y2");
+
+        for (offset, color) in stops {
+            let stop = create_svg_element::<web_sys::SvgStopElement>(&doc, "stop");
+            stop.set_attribute("offset", &format!("{}%", offset * 100.0))
+                .expect("failed to set stop offset");
+            stop.set_attribute("stop-color", &color.html())
+                .expect("failed to set stop color");
+            grad.append_child(&stop)
+                .expect("failed to append stop to gradient");
+        }
+        self.defs
+            .append_child(&grad)
+            .expect("failed to append gradient to defs");
+        id
+    }
+
+    fn bump_id(&mut self) -> String {
+        self.id_num += 1;
+        format!("{}-clip{}", self.id_prefix, self.id_num)
     }
 }
 

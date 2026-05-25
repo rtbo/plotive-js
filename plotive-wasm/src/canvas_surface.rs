@@ -21,14 +21,19 @@ impl CanvasSurface {
     fn set_fill_style(&mut self, paint: &render::Paint) {
         match paint {
             render::Paint::Solid(color) => {
-                let css_color = format!(
-                    "rgba({}, {}, {}, {})",
-                    color.r(),
-                    color.g(),
-                    color.b(),
-                    (color.a() as f32 / 255.0),
+                self.ctx.set_fill_style_str(&color.html());
+            }
+            render::Paint::LinearGradient { start_pos, end_pos, stops } => {
+                let gradient = self.ctx.create_linear_gradient(
+                    start_pos.x as f64,
+                    start_pos.y as f64,
+                    end_pos.x as f64,
+                    end_pos.y as f64,
                 );
-                self.ctx.set_fill_style_str(&css_color);
+                for stop in stops.iter() {
+                    gradient.add_color_stop(stop.0, &stop.1.html()).unwrap();
+                }
+                self.ctx.set_fill_style_canvas_gradient(&gradient);
             }
         }
     }
@@ -59,6 +64,12 @@ impl CanvasSurface {
 
 
 impl render::Surface for CanvasSurface {
+    fn caps(&self) -> render::SurfaceCaps {
+        render::SurfaceCaps {
+            max_gradient_stops: usize::MAX,
+        }
+    }
+
     fn prepare(&mut self, size: geom::Size) {
         self.canvas.set_width(size.width() as u32);
         self.canvas.set_height(size.height() as u32);
