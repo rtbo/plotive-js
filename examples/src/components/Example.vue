@@ -72,7 +72,7 @@ watchEffect(() => {
                 <div class="min-h-56 p-3 text-center mt-4"
                     aria-label="figure preview">
                     <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full" />
-                    <svg v-if="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
+                    <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
                     <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
                         class="mx-auto block max-w-full" />
                 </div>

@@ -9,7 +9,7 @@ export default function (): Figure {
     return {
         size: {
             width: 800,
-            height: 1000,
+            height: 900,
         },
         plots: [
             {

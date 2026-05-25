@@ -56,7 +56,7 @@ export default function (): Figure {
                         type: "label",
                         xy: [cutoff, -60],
                         text: `${(cutoff / 1000).toFixed(2)} kHz`,
-                        anchor: "top-left",
+                        anchor: "bottom-left",
                         angle: 90,
                     },
                     {
