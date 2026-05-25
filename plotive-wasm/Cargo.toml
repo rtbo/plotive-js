@@ -24,13 +24,25 @@ plotive = { path = "../../plotive", features = [
     "noto-sans-italic",
     "noto-serif",
     "noto-serif-italic",
-    "time"
+    "time",
 ] }
 plotive-pxl = { path = "../../plotive/pxl" }
 plotive-svg = { path = "../../plotive/svg" }
 plotive-text = { path = "../../plotive/text" }
 wasm-bindgen = "0.2.84"
-web-sys = { version = "0.3.91", features = ["console"] }
+web-sys = { version = "0.3.91", features = [
+    "console",
+    "Node",
+    "Document",
+    "Element",
+    "HtmlCanvasElement",
+    "CanvasRenderingContext2d",
+    "SvgElement",
+    "SvggElement",
+    "SvgRectElement",
+    "SvgPathElement",
+    "SvgClipPathElement",
+] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

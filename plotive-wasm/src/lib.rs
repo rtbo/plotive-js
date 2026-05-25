@@ -3,6 +3,8 @@ use plotive::Prepare;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
+mod canvas_surface;
+mod svg_surface;
 mod js_annot;
 mod js_axis;
 mod js_fig;
@@ -95,6 +97,26 @@ pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, Js
         "data:image/png;base64,{}",
         BASE64_STANDARD.encode(&png_data)
     ))
+}
+
+#[wasm_bindgen]
+pub fn render_to_canvas(fig: JsValue, canvas: web_sys::HtmlCanvasElement, style: JsValue) -> Result<(), JsError> {
+    let fig = js_fig::extract_figure(&fig)?;
+    let style = js_style::extract_style(&style)?;
+    let mut surf = canvas_surface::CanvasSurface::new(canvas);
+    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
+    fig.draw(&mut surf, &style);
+    Ok(())
+}
+
+#[wasm_bindgen]
+pub fn render_to_svg(fig: JsValue, svg: web_sys::SvgElement, style: JsValue) -> Result<(), JsError> {
+    let fig = js_fig::extract_figure(&fig)?;
+    let style = js_style::extract_style(&style)?;
+    let mut surf = svg_surface::SvgSurface::new(svg);
+    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
+    fig.draw(&mut surf, &style);
+    Ok(())
 }
 
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {

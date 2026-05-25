@@ -103,6 +103,18 @@ export interface Figure {
     legend?: FigLegendPos | FigLegend;
 }
 
+export function figureSize(fig: Figure): [number, number] {
+    if (fig.size) {
+        if (Array.isArray(fig.size)) {
+            return fig.size;
+        } else {
+            return [fig.size.width, fig.size.height];
+        }
+    } else {
+        return [800, 600];
+    }
+}
+
 export async function renderToSvgString(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
     const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
@@ -120,7 +132,19 @@ export async function renderAsSvg(elem: Element, fig: Figure, style?: BuiltinSty
     elem.innerHTML = svg;
 }
 
+export async function renderToSvg(elem: SVGElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
+    const normalized = normalizeFig(fig);
+    const wasm = await getWasmApi();
+    await wasm.render_to_svg(normalized, elem, style);
+}
+
 export async function renderToImg(elem: HTMLImageElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
     const dataUrl = await renderToPngDataUrl(fig, style);
     elem.src = dataUrl;
+}
+
+export async function renderToCanvas(canvas: HTMLCanvasElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
+    const normalized = normalizeFig(fig);
+    const wasm = await getWasmApi();
+    await wasm.render_to_canvas(normalized, canvas, style);
 }

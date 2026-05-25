@@ -7,6 +7,8 @@ declare const __PLOTIVE_WASM_NODE_PATH__: string;
 export type WasmApi = {
     render_to_svg_string: (fig: Figure, style?: BuiltinStyleName | Style) => string;
     render_to_png_data_url: (fig: Figure, style?: BuiltinStyleName | Style) => string;
+    render_to_canvas: (fig: Figure, canvas: HTMLCanvasElement, style?: BuiltinStyleName | Style) => void;
+    render_to_svg: (fig: Figure, svg: SVGElement, style?: BuiltinStyleName | Style) => void;
     set_panic_hook: () => void;
 };
 

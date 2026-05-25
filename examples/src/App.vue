@@ -91,7 +91,7 @@ function formatExponential(value: number) {
         <h1 class="text-xl font-semibold tracking-tight">Plotive examples</h1>
         <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <Select v-model="currentTheme" :options="themes" />
-          <SelectButton v-model="settings.renderer" :options="['PNG', 'SVG']" />
+          <SelectButton v-model="settings.renderer" :options="['PNG', 'Canvas', 'SVG']" />
           <SelectButton v-model="darkMode" :options="['light', 'dark']" />
         </div>
       </div>
@@ -107,23 +107,23 @@ function formatExponential(value: number) {
         <div class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-4 px-2 py-2 sm:px-3">
           <label class="text-sm font-medium">R1</label>
           <Slider v-model="R1Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1) }}</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1) }} Ω</span>
 
           <label class="text-sm font-medium">R2</label>
           <Slider v-model="R2Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1) }}</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1) }} Ω</span>
 
           <label class="text-sm font-medium">R3</label>
           <Slider v-model="R3Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1) }}</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1) }} Ω</span>
 
           <label class="text-sm font-medium">C</label>
           <Slider v-model="CLog" :min="-7" :max="-5" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.C) }}</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.C) }} F</span>
 
           <label class="text-sm font-medium">L</label>
           <Slider v-model="LLog" :min="-5" :max="-3" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.L) }}</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.L) }} H</span>
         </div>
       </Example>
     </main>

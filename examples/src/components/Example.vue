@@ -1,12 +1,11 @@
 <script setup lang="ts">
+import { renderToSvg, renderToCanvas, renderToImg } from 'plotive';
 import { useSettingsStore } from '@/stores/settings';
 import { computed, onUnmounted, ref, watchEffect } from 'vue';
 import type { Figure } from 'plotive';
 import hljs from 'highlight.js/lib/core';
 import ts from 'highlight.js/lib/languages/typescript';
 import '@/dracula.css';
-import RenderWorker from '@/workers/render.worker?worker';
-import type { RenderRequest, RenderResponse } from '@/workers/render.worker';
 
 hljs.registerLanguage('typescript', ts);
 
@@ -17,38 +16,39 @@ const props = defineProps<{
 }>();
 
 const settings = useSettingsStore();
-const svgContainer = ref<HTMLElement | null>(null);
-const pngImage = ref<HTMLImageElement | null>(null);
-
-const worker = new RenderWorker();
-let renderGeneration = 0;
+const canvasEl = ref<HTMLCanvasElement | null>(null);
+const svgEl = ref<SVGElement | null>(null);
+const imgEl = ref<HTMLImageElement | null>(null);
 
 const highlightedCode = computed(() => {
     return hljs.highlight(props.figureCode, { language: 'typescript' }).value;
 });
 
 async function drawFigure(fig: Figure) {
-    const generation = ++renderGeneration;
     const style = settings.theme || 'light';
     const renderer = settings.renderer;
 
-    const response = await new Promise<RenderResponse>((resolve) => {
-        const handler = (e: MessageEvent<RenderResponse>) => {
-            worker.removeEventListener('message', handler);
-            resolve(e.data);
-        };
-        worker.addEventListener('message', handler);
-        worker.postMessage({ fig, style, renderer } satisfies RenderRequest);
-    });
-
-    if (generation !== renderGeneration) return;
-    if ('error' in response) { console.error(response.error); return; }
-
-    if (renderer === 'SVG' && svgContainer.value) {
-        svgContainer.value.innerHTML = response.result;
-    }
-    if (renderer === 'PNG' && pngImage.value) {
-        pngImage.value.src = response.result;
+    if (renderer === 'Canvas' && canvasEl.value) {
+        try {
+            await renderToCanvas(canvasEl.value, fig, style);
+        } catch (err) {
+            console.error('Error rendering to canvas:', err);
+        }
+    } else if (renderer === 'SVG' && svgEl.value) {
+        try {
+            await renderToSvg(svgEl.value, fig, style);
+        } catch (err) {
+            console.error('Error rendering to SVG:', err);
+        }
+    } else if (renderer === 'PNG' && imgEl.value) {
+        try {
+            await renderToImg(imgEl.value, fig, style);
+        } catch (err) {
+            console.error('Error rendering to PNG:', err);
+        }
+    } else {
+        console.warn('No valid renderer or container found');
+        return;
     }
 }
 
@@ -57,10 +57,6 @@ watchEffect(() => {
     // including slider-driven store values used by props.figureFn.
     const fig = props.figureFn();
     void drawFigure(fig);
-});
-
-onUnmounted(() => {
-    worker.terminate();
 });
 
 </script>
@@ -73,15 +69,15 @@ onUnmounted(() => {
                 <div v-if="$slots.default" class="example-controls mt-4">
                     <slot></slot>
                 </div>
-                <div class="min-h-56 p-3 text-center mt-4 [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+                <div class="min-h-56 p-3 text-center mt-4"
                     aria-label="figure preview">
-                    <div v-show="settings.renderer === 'SVG'" ref="svgContainer"></div>
-                    <img v-show="settings.renderer === 'PNG'" ref="pngImage" alt="figure render"
+                    <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full" />
+                    <svg v-if="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
+                    <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
                         class="mx-auto block max-w-full" />
                 </div>
             </div>
-            <pre
-                class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl self-start lg:col-start-2">
+            <pre class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl self-start lg:col-start-2">
                 <code class="hljs language-typescript rounded-xl" v-html="highlightedCode"></code>
             </pre>
         </div>
