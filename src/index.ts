@@ -116,9 +116,12 @@ export function figureSize(fig: Figure): [number, number] {
 }
 
 export async function renderToSvgString(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
-    const normalized = normalizeFig(fig);
-    const wasm = await getWasmApi();
-    return wasm.render_to_svg_string(normalized, style);
+    if (typeof document === "undefined" || typeof XMLSerializer === "undefined") {
+        throw new Error("renderToSvgString requires a DOM environment.");
+    }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    await renderToSvg(svg, fig, style);
+    return new XMLSerializer().serializeToString(svg);
 }
 
 export async function renderToPngDataUrl(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {

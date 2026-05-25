@@ -66,21 +66,6 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn render_to_svg_string(fig: JsValue, style: JsValue) -> Result<String, JsError> {
-    let fig = js_fig::extract_figure(&fig)?;
-    let style = js_style::extract_style(&style)?;
-    let width = fig.size().width() as u32;
-    let height = fig.size().height() as u32;
-    let mut surf = plotive_svg::SvgSurface::new(width, height);
-    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
-    fig.draw(&mut surf, &style);
-    let mut svg_str = Vec::new();
-    surf.write(&mut svg_str).map_err(|e| js_err!("{}", e))?;
-    let svg_str = String::from_utf8(svg_str).map_err(|e| js_err!("{}", e))?;
-    Ok(svg_str)
-}
-
-#[wasm_bindgen]
 pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, JsError> {
     use base64::prelude::*;
     use plotive_pxl::PxlRender;

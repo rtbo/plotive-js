@@ -27,7 +27,6 @@ plotive = { path = "../../plotive", features = [
     "time",
 ] }
 plotive-pxl = { path = "../../plotive/pxl" }
-plotive-svg = { path = "../../plotive/svg" }
 plotive-text = { path = "../../plotive/text" }
 wasm-bindgen = "0.2.84"
 web-sys = { version = "0.3.91", features = [
