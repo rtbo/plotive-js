@@ -2,46 +2,30 @@ use js_sys::Reflect;
 use plotive::des;
 use wasm_bindgen::JsValue;
 
-use crate::{extract_type, get_prop_if_defined, js_style};
+use crate::{extract_type, get_prop_if_defined, js_err, js_style, JsErr};
 
-pub fn extract_ref(js_ref: &JsValue) -> Result<des::axis::Ref, JsValue> {
+pub fn extract_ref(js_ref: &JsValue) -> Result<des::axis::Ref, JsErr> {
     if let Some(idx) = js_ref.as_f64() {
         Ok(des::axis::Ref::Idx(idx as usize))
     } else if let Some(id_or_title) = js_ref.as_string() {
         Ok(des::axis::Ref::Id(id_or_title))
     } else {
-        Err(JsValue::from_str(
+        Err(js_err!(
             "Axis reference must be a number (index) or string (id or title).",
         ))
     }
 }
 
-pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
+pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsErr> {
     let mut axis = des::Axis::new();
 
     if let Some(js_scale) = get_prop_if_defined(js_axis, "scale") {
-        if let Some(typ) = js_scale.as_string() {
-            match typ.as_str() {
-                "auto" => {
-                    axis = axis.with_scale(des::axis::Scale::Auto);
-                }
-                "lin" => {
-                    axis = axis.with_scale(des::axis::Range::default().into());
-                }
-                "log" => {
-                    axis = axis.with_scale(des::axis::LogScale::default().into());
-                }
-                "shared" => {
-                    return Err(JsValue::from_str(
-                        "Shared scale requires a 'ref' property. Please provide an object with 'type' and 'ref' properties.",
-                    ));
-                }
-                _ => {
-                    return Err(JsValue::from_str(&format!(
-                        "Unsupported scale type: {}",
-                        typ
-                    )));
-                }
+        if js_scale.is_array() {
+            let arr = js_sys::Array::from(&js_scale);
+            if arr.length() != 2 {
+                return Err(js_err!(
+                    "'scale' array must have exactly 2 elements: [type, options]",
+                ));
             }
         } else {
             axis = axis.with_scale(extract_scale(&js_scale)?);
@@ -51,26 +35,26 @@ pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
     if let Some(js_title) = get_prop_if_defined(js_axis, "title") {
         let title = js_title
             .as_string()
-            .ok_or_else(|| JsValue::from_str("'title' property must be a string"))?;
+            .ok_or_else(|| js_err!("'title' property must be a string"))?;
         axis = axis.with_title(title.into());
     }
 
     if let Some(js_id) = get_prop_if_defined(js_axis, "id") {
         let id = js_id
             .as_string()
-            .ok_or_else(|| JsValue::from_str("'id' property must be a string"))?;
+            .ok_or_else(|| js_err!("'id' property must be a string"))?;
         axis = axis.with_id(id);
     }
 
     if let Some(js_side) = get_prop_if_defined(js_axis, "side") {
         let side = js_side
             .as_string()
-            .ok_or_else(|| JsValue::from_str("'side' property must be a string"))?;
+            .ok_or_else(|| js_err!("'side' property must be a string"))?;
         match side.as_str() {
             "top" | "right" => axis = axis.with_opposite_side(),
             "bottom" | "left" => {}
             _ => {
-                return Err(JsValue::from_str(
+                return Err(js_err!(
                     "Invalid 'side' value. Must be 'top', 'right', 'bottom', or 'left'.",
                 ))
             }
@@ -82,54 +66,81 @@ pub fn extract_axis(js_axis: &JsValue) -> Result<des::Axis, JsValue> {
         axis = axis.with_ticks(ticks);
     }
 
-    if let Some(js_grid) = get_prop_if_defined(js_axis, "grid") {
-        let stroke = js_style::extract_theme_stroke(&js_grid)?;
-        axis = axis.with_grid(stroke.into());
-    }
-
     if let Some(js_minor_ticks) = get_prop_if_defined(js_axis, "minorTicks") {
         let locator = extract_ticks_locator(&js_minor_ticks)?;
         let minor_ticks = des::axis::MinorTicks::new().with_locator(locator);
         axis = axis.with_minor_ticks(minor_ticks);
     }
 
+    if let Some(js_grid) = get_prop_if_defined(js_axis, "grid") {
+        let mut done = false;
+        if let Some(js_grid) = js_grid.as_string() {
+            if js_grid == "default" {
+                axis = axis.with_grid(des::axis::Grid::default());
+                done = true;
+            }
+        }
+        if !done {
+            let stroke = js_style::extract_theme_stroke(&js_grid)?;
+            axis = axis.with_grid(stroke.into());
+        }
+    }
+
     if let Some(js_minor_grid) = get_prop_if_defined(js_axis, "minorGrid") {
-        let stroke = js_style::extract_theme_stroke(&js_minor_grid)?;
-        axis = axis.with_minor_grid(stroke.into());
+        let mut done = false;
+        if let Some(js_minor_grid) = js_minor_grid.as_string() {
+            if js_minor_grid == "default" {
+                axis = axis.with_minor_grid(des::axis::MinorGrid::default());
+                done = true;
+            }
+        }
+        if !done {
+            let stroke = js_style::extract_theme_stroke(&js_minor_grid)?;
+            axis = axis.with_minor_grid(stroke.into());
+        }
     }
 
     Ok(axis)
 }
 
-fn extract_range(js_scale: &JsValue) -> Result<des::axis::Range, JsValue> {
+fn extract_bound(js_bound: &JsValue, err: &str) -> Result<Option<f64>, JsErr> {
+    if js_bound.is_null() {
+        Ok(None)
+    } else {
+        js_bound
+            .as_f64()
+            .ok_or_else(|| js_err!("{}", err))
+            .map(Some)
+    }
+}
+
+fn extract_range(js_scale: &JsValue) -> Result<des::axis::Range, JsErr> {
     let min = if let Some(m) = get_prop_if_defined(js_scale, "min") {
-        if m.is_null() {
-            None
-        } else {
-            Some(
-                m.as_f64()
-                    .ok_or_else(|| JsValue::from_str("'min' property must be a number"))?,
-            )
-        }
+        extract_bound(&m, "'min' property must be a number or null")?
     } else {
         None
     };
     let max = if let Some(m) = get_prop_if_defined(js_scale, "max") {
-        if m.is_null() {
-            None
-        } else {
-            Some(
-                m.as_f64()
-                    .ok_or_else(|| JsValue::from_str("'max' property must be a number"))?,
-            )
-        }
+        extract_bound(&m, "'max' property must be a number or null")?
     } else {
         None
     };
     Ok(des::axis::Range(min, max))
 }
 
-fn extract_scale(js_scale: &JsValue) -> Result<des::axis::Scale, JsValue> {
+pub fn extract_scale(js_scale: &JsValue) -> Result<des::axis::Scale, JsErr> {
+    if js_scale.is_array() {
+        let arr = js_sys::Array::from(js_scale);
+        if arr.length() != 2 {
+            return Err(js_err!(
+                "'scale' array must have exactly 2 elements defining bounds: [min|null, max|null]",
+            ));
+        }
+        let min = extract_bound(&arr.get(0), "bound must be a number or null")?;
+        let max = extract_bound(&arr.get(1), "bound must be a number or null")?;
+        return Ok(des::axis::Scale::Linear(des::axis::Range(min, max)));
+    }
+
     let typ_name = extract_type(js_scale)?;
 
     match typ_name.as_str() {
@@ -139,18 +150,15 @@ fn extract_scale(js_scale: &JsValue) -> Result<des::axis::Scale, JsValue> {
             get_prop_if_defined(js_scale, "base")
                 .unwrap_or(JsValue::from_f64(10.0))
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("'base' property must be a number"))?,
+                .ok_or_else(|| js_err!("'base' property must be a number"))?,
             extract_range(&js_scale)?,
         )
         .into()),
         "shared" => Ok(des::axis::Scale::Shared(extract_ref(
             &get_prop_if_defined(js_scale, "ref")
-                .ok_or_else(|| JsValue::from_str("'ref' property is required for shared scale"))?,
+                .ok_or_else(|| js_err!("'ref' property is required for shared scale"))?,
         )?)),
-        _ => Err(JsValue::from_str(&format!(
-            "Unsupported scale type: {}",
-            typ_name
-        ))),
+        _ => Err(js_err!("Unsupported scale type: {}", typ_name)),
     }
 }
 
@@ -158,7 +166,7 @@ fn extract_number_array_prop_or_else<T, F>(
     js_parent: &JsValue,
     field: &str,
     default: F,
-) -> Result<Vec<T>, JsValue>
+) -> Result<Vec<T>, JsErr>
 where
     T: From<f64>,
     F: FnOnce() -> Vec<T>,
@@ -166,12 +174,9 @@ where
     let property_key = JsValue::from_str(field);
     if Reflect::has(js_parent, &property_key).unwrap_or(false) {
         let js_array = Reflect::get(js_parent, &property_key)
-            .map_err(|_| JsValue::from_str(&format!("Failed to get '{}' property", field)))?;
+            .map_err(|_| js_err!("Failed to get '{}' property", field))?;
         if !js_array.is_array() {
-            return Err(JsValue::from_str(&format!(
-                "'{}' property must be an array",
-                field
-            )));
+            return Err(js_err!("'{}' property must be an array", field));
         }
         let arr = js_sys::Array::from(&js_array);
         let mut result = Vec::with_capacity(arr.length() as usize);
@@ -180,10 +185,11 @@ where
             if let Some(num) = val.as_f64() {
                 result.push(T::from(num));
             } else {
-                return Err(JsValue::from_str(&format!(
+                return Err(js_err!(
                     "Expected a number at index {} in the '{}' array",
-                    i, field
-                )));
+                    i,
+                    field
+                ));
             }
         }
         Ok(result)
@@ -192,28 +198,17 @@ where
     }
 }
 
-fn extract_ticks_locator_from_str(str: &str) -> Result<des::axis::ticks::Locator, JsValue> {
-    match str {
-        "auto" => Ok(des::axis::ticks::Locator::Auto),
-        "maxn" => Ok(des::axis::ticks::MaxNLocator {
-            bins: 10,
-            steps: vec![1.0, 2.0, 5.0],
-        }
-        .into()),
-        "pimultiple" => Ok(des::axis::ticks::PiMultipleLocator { bins: 10 }.into()),
-        "log" => Ok(des::axis::ticks::LogLocator { base: 10.0 }.into()),
-        "datetime" => Ok(des::axis::ticks::DateTimeLocator::Auto.into()),
-        "timedelta" => Ok(des::axis::ticks::TimeDeltaLocator::Auto.into()),
-        _ => Err(JsValue::from_str(&format!(
-            "Unsupported ticks locator type: {}",
-            str
-        ))),
-    }
-}
-
-fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locator, JsValue> {
-    if let Some(str) = js_locator.as_string() {
-        return extract_ticks_locator_from_str(&str);
+pub fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locator, JsErr> {
+    if js_locator.is_array() {
+        let arr = js_sys::Array::from(js_locator);
+        let ticks: Result<Vec<f64>, JsErr> = arr
+            .iter()
+            .map(|v| {
+                v.as_f64()
+                    .ok_or_else(|| js_err!("Expected a number in ticks array"))
+            })
+            .collect();
+        return Ok(des::axis::ticks::ListLocator(ticks?).into());
     }
     let typ_name = extract_type(js_locator)?;
     match typ_name.as_str() {
@@ -222,7 +217,7 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
             bins: get_prop_if_defined(js_locator, "bins")
                 .unwrap_or_else(|| JsValue::from_f64(10.0))
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("'bins' property must be a number"))?
+                .ok_or_else(|| js_err!("'bins' property must be a number"))?
                 as u32,
             steps: extract_number_array_prop_or_else(js_locator, "steps", || vec![1.0, 2.0, 5.0])?,
         }
@@ -231,7 +226,7 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
             bins: get_prop_if_defined(js_locator, "bins")
                 .unwrap_or_else(|| JsValue::from_f64(10.0))
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("'bins' property must be a number"))?
+                .ok_or_else(|| js_err!("'bins' property must be a number"))?
                 as u32,
         }
         .into()),
@@ -239,40 +234,41 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
             base: get_prop_if_defined(js_locator, "base")
                 .unwrap_or_else(|| JsValue::from_f64(10.0))
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("'base' property must be a number"))?,
+                .ok_or_else(|| js_err!("'base' property must be a number"))?,
         }
         .into()),
         "datetime" => {
             if let Some(period) = get_prop_if_defined(js_locator, "period") {
                 if !period.is_array() {
-                    return Err(JsValue::from_str(
+                    return Err(js_err!(
                         "'period' property must be an array of [number, unit string]",
                     ));
                 }
                 let arr = js_sys::Array::from(&period);
                 if arr.length() != 2 {
-                    return Err(JsValue::from_str(
+                    return Err(js_err!(
                         "'period' property must be an array of [number, unit string]",
                     ));
                 }
-                let num = arr.get(0).as_f64().ok_or_else(|| {
-                    JsValue::from_str("First element of 'period' array must be a number")
-                })? as u32;
-                let unit = arr.get(1).as_string().ok_or_else(|| {
-                    JsValue::from_str("Second element of 'period' array must be a string")
-                })?;
+                let num =
+                    arr.get(0).as_f64().ok_or_else(|| {
+                        js_err!("First element of 'period' array must be a number")
+                    })? as u32;
+                let unit = arr
+                    .get(1)
+                    .as_string()
+                    .ok_or_else(|| js_err!("Second element of 'period' array must be a string"))?;
                 match unit.as_str() {
-                    "seconds" => Ok(des::axis::ticks::DateTimeLocator::Seconds(num).into()),
-                    "minutes" => Ok(des::axis::ticks::DateTimeLocator::Minutes(num).into()),
-                    "hours" => Ok(des::axis::ticks::DateTimeLocator::Hours(num).into()),
-                    "days" => Ok(des::axis::ticks::DateTimeLocator::Days(num).into()),
-                    "weeks" => Ok(des::axis::ticks::DateTimeLocator::Weeks(num).into()),
-                    "months" => Ok(des::axis::ticks::DateTimeLocator::Months(num).into()),
-                    "years" => Ok(des::axis::ticks::DateTimeLocator::Years(num).into()),
-                    _ => Err(JsValue::from_str(&format!(
-                        "Unknown DateTimeTicksLocator unit: {}",
-                        unit
-                    ))),
+                    "micro" => Ok(des::axis::ticks::DateTimeLocator::Micros(num).into()),
+                    "milli" => Ok(des::axis::ticks::DateTimeLocator::Micros(num * 1000).into()),
+                    "sec" => Ok(des::axis::ticks::DateTimeLocator::Seconds(num).into()),
+                    "min" => Ok(des::axis::ticks::DateTimeLocator::Minutes(num).into()),
+                    "hour" => Ok(des::axis::ticks::DateTimeLocator::Hours(num).into()),
+                    "day" => Ok(des::axis::ticks::DateTimeLocator::Days(num).into()),
+                    "week" => Ok(des::axis::ticks::DateTimeLocator::Weeks(num).into()),
+                    "month" => Ok(des::axis::ticks::DateTimeLocator::Months(num).into()),
+                    "year" => Ok(des::axis::ticks::DateTimeLocator::Years(num).into()),
+                    _ => Err(js_err!("Unknown DateTimeTicksLocator unit: {}", unit)),
                 }
             } else {
                 Ok(des::axis::ticks::DateTimeLocator::Auto.into())
@@ -281,44 +277,42 @@ fn extract_ticks_locator(js_locator: &JsValue) -> Result<des::axis::ticks::Locat
         "timedelta" => {
             if let Some(period) = get_prop_if_defined(js_locator, "period") {
                 if !period.is_array() {
-                    return Err(JsValue::from_str(
+                    return Err(js_err!(
                         "'period' property must be an array of [number, unit string]",
                     ));
                 }
                 let arr = js_sys::Array::from(&period);
                 if arr.length() != 2 {
-                    return Err(JsValue::from_str(
+                    return Err(js_err!(
                         "'period' property must be an array of [number, unit string]",
                     ));
                 }
-                let num = arr.get(0).as_f64().ok_or_else(|| {
-                    JsValue::from_str("First element of 'period' array must be a number")
-                })? as u32;
-                let unit = arr.get(1).as_string().ok_or_else(|| {
-                    JsValue::from_str("Second element of 'period' array must be a string")
-                })?;
+                let num =
+                    arr.get(0).as_f64().ok_or_else(|| {
+                        js_err!("First element of 'period' array must be a number")
+                    })? as u32;
+                let unit = arr
+                    .get(1)
+                    .as_string()
+                    .ok_or_else(|| js_err!("Second element of 'period' array must be a string"))?;
                 match unit.as_str() {
-                    "seconds" => Ok(des::axis::ticks::TimeDeltaLocator::Seconds(num).into()),
-                    "minutes" => Ok(des::axis::ticks::TimeDeltaLocator::Minutes(num).into()),
-                    "hours" => Ok(des::axis::ticks::TimeDeltaLocator::Hours(num).into()),
-                    "days" => Ok(des::axis::ticks::TimeDeltaLocator::Days(num).into()),
-                    _ => Err(JsValue::from_str(&format!(
-                        "Unknown TimeDeltaTicksLocator unit: {}",
-                        unit
-                    ))),
+                    "micro" => Ok(des::axis::ticks::TimeDeltaLocator::Micros(num).into()),
+                    "milli" => Ok(des::axis::ticks::TimeDeltaLocator::Micros(num * 1000).into()),
+                    "sec" => Ok(des::axis::ticks::TimeDeltaLocator::Seconds(num).into()),
+                    "min" => Ok(des::axis::ticks::TimeDeltaLocator::Minutes(num).into()),
+                    "hour" => Ok(des::axis::ticks::TimeDeltaLocator::Hours(num).into()),
+                    "day" => Ok(des::axis::ticks::TimeDeltaLocator::Days(num).into()),
+                    _ => Err(js_err!("Unknown TimeDeltaTicksLocator unit: {}", unit)),
                 }
             } else {
                 Ok(des::axis::ticks::TimeDeltaLocator::Auto.into())
             }
         }
-        _ => Err(JsValue::from_str(&format!(
-            "Unsupported ticks locator type: {}",
-            typ_name
-        ))),
+        _ => Err(js_err!("Unsupported ticks locator type: {}", typ_name)),
     }
 }
 
-fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::Formatter, JsValue> {
+fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::Formatter, JsErr> {
     let typ_name = extract_type(js_formatter)?;
     match typ_name.as_str() {
         "auto" => Ok(des::axis::ticks::Formatter::Auto),
@@ -327,14 +321,14 @@ fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::F
             get_prop_if_defined(js_formatter, "precision")
                 .unwrap_or_else(|| JsValue::from_f64(2.0))
                 .as_f64()
-                .ok_or_else(|| JsValue::from_str("'precision' property must be a number"))?
+                .ok_or_else(|| js_err!("'precision' property must be a number"))?
                 as usize,
         )),
         "percent" => Ok(des::axis::ticks::PercentFormatter {
             decimal_places: get_prop_if_defined(js_formatter, "decimals")
                 .map(|d| {
                     d.as_f64()
-                        .ok_or_else(|| JsValue::from_str("'decimals' property must be a number"))
+                        .ok_or_else(|| js_err!("'decimals' property must be a number"))
                 })
                 .transpose()?
                 .map(|d| d as usize),
@@ -344,7 +338,7 @@ fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::F
             let fmt: Option<String> = get_prop_if_defined(js_formatter, "fmt")
                 .map(|f| {
                     f.as_string()
-                        .ok_or_else(|| JsValue::from_str("'fmt' property must be a string"))
+                        .ok_or_else(|| js_err!("'fmt' property must be a string"))
                 })
                 .transpose()?;
             let formatter = match (fmt, typ_name.as_str()) {
@@ -360,7 +354,7 @@ fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::F
             let fmt: Option<String> = get_prop_if_defined(js_formatter, "fmt")
                 .map(|f| {
                     f.as_string()
-                        .ok_or_else(|| JsValue::from_str("'fmt' property must be a string"))
+                        .ok_or_else(|| js_err!("'fmt' property must be a string"))
                 })
                 .transpose()?;
             let formatter = fmt
@@ -368,27 +362,12 @@ fn extract_ticks_formatter(js_formatter: &JsValue) -> Result<des::axis::ticks::F
                 .unwrap_or_else(|| des::axis::ticks::TimeDeltaFormatter::Auto);
             Ok(formatter.into())
         }
-        _ => Err(JsValue::from_str(&format!(
-            "Unsupported ticks formatter type: {}",
-            typ_name
-        ))),
+        _ => Err(js_err!("Unsupported ticks formatter type: {}", typ_name)),
     }
 }
 
-fn extract_ticks(js_ticks: &JsValue) -> Result<des::axis::Ticks, JsValue> {
+fn extract_ticks(js_ticks: &JsValue) -> Result<des::axis::Ticks, JsErr> {
     let mut ticks = des::axis::Ticks::default();
-    if let Some(js_ticks) = js_ticks.as_string() {
-        match js_ticks.as_str() {
-            "percent" => {
-                ticks = ticks
-                    .with_formatter(Some(des::axis::ticks::PercentFormatter::default().into()));
-            }
-            _ => {
-                ticks = ticks.with_locator(extract_ticks_locator_from_str(&js_ticks)?);
-            }
-        }
-        return Ok(ticks);
-    }
     if let Some(js_locator) = get_prop_if_defined(js_ticks, "locator") {
         let locator = extract_ticks_locator(&js_locator)?;
         ticks = ticks.with_locator(locator);

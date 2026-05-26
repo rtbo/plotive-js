@@ -1,7 +1,12 @@
 {
   "name": "plotive",
   "version": "0.3.0",
-  "keywords": ["plotting", "visualization", "charts", "graphs"],
+  "keywords": [
+    "plotting",
+    "visualization",
+    "charts",
+    "graphs"
+  ],
   "author": "Rémi Thebault",
   "description": "A library for plotting data.",
   "repository": {
@@ -9,34 +14,35 @@
     "url": "https://github.com/rtbo/plotive-js.git"
   },
   "scripts": {
-    "build:wasm:web": "wasm-pack build plotive-wasm --target web --out-dir ../src/wasm",
-    "build:wasm:node": "wasm-pack build plotive-wasm --target nodejs --out-dir ../src/wasm-node",
-    "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
-    "build:ts:esm": "tsc -p tsconfig.esm.json",
-    "build:ts:cjs": "tsc -p tsconfig.cjs.json",
-    "build:ts": "pnpm run build:ts:esm && pnpm run build:ts:cjs",
-    "clean:dist": "node scripts/clean-dist.mjs",
-    "copy:wasm": "node scripts/copy-wasm.mjs",
-    "copy:wasm:node": "node scripts/copy-wasm-node.mjs",
-    "rename:esm": "node scripts/rename-esm-to-mjs.mjs",
-    "build": "pnpm run clean:dist && pnpm run build:wasm:web && pnpm run build:ts && pnpm run copy:wasm && pnpm run build:wasm:node && pnpm run copy:wasm:node && pnpm run rename:esm",
+    "clean": "node scripts/clean.js",
+    "build:wasm:dev": "node scripts/wasm.js --target dev",
+    "build:wasm:prod": "node scripts/wasm.js --target prod",
+    "build:ts:web": "vite -c vite.lib.config.ts build --mode web",
+    "build:ts:node-cjs": "vite -c vite.lib.config.ts build --mode node-cjs",
+    "build:ts:node-esm": "vite -c vite.lib.config.ts build --mode node-esm",
+    "build:ts:types": "tsc -p tsconfig.build.json",
+    "build:ts:all": "pnpm run build:ts:web && pnpm run build:ts:node-cjs && pnpm run build:ts:node-esm && pnpm run build:ts:types",
+    "build:dev": "pnpm run clean && pnpm run build:wasm:dev && pnpm run build:ts:web && pnpm run build:ts:types",
+    "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
-    "dev": "vite",
-    "example:sine:install": "pnpm --dir examples/sine install",
-    "example:sine:dev": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run dev",
-    "example:sine:build": "pnpm run build && pnpm run example:sine:install && pnpm --dir examples/sine run build",
-    "example:multiple-axes:install": "pnpm --dir examples/multiple-axes install",
-    "example:multiple-axes:dev": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run dev",
-    "example:multiple-axes:build": "pnpm run build && pnpm run example:multiple-axes:install && pnpm --dir examples/multiple-axes run build"
+    "examples:install": "pnpm --dir examples install",
+    "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples run dev"
   },
-  "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.mjs",
+  "main": "./dist/node/cjs/index.cjs",
+  "module": "./dist/web/index.mjs",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/esm/index.d.ts",
-      "import": "./dist/esm/index.mjs",
-      "require": "./dist/cjs/index.cjs"
+      "types": "./dist/types/index.d.ts",
+      "node": {
+        "import": "./dist/node/esm/index.mjs",
+        "require": "./dist/node/cjs/index.cjs"
+      },
+      "browser": "./dist/web/index.mjs",
+      "import": "./dist/web/index.mjs",
+      "require": "./dist/node/cjs/index.cjs",
+      "default": "./dist/web/index.mjs"
     }
   },
   "files": [
@@ -45,8 +51,8 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@types/node": "^25.8.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }
 }
-

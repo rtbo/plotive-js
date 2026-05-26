@@ -1,14 +1,17 @@
-import { ThemeColor, ThemeFill, ThemeStroke } from "./style";
+import { ThemeColor, ThemeFill, ThemeMarker, ThemeStroke } from "./style";
 
 export type ZPos = "below-series" | "above-series";
 
-interface LineBase {
-    type: "line";
-    stroke?: ThemeStroke;
-    pattern?: number[];
+interface AnnotBase {
     xAxis?: string;
     yAxis?: string;
     zpos?: ZPos;
+}
+
+type LineBase = AnnotBase & {
+    type: "line";
+    stroke?: ThemeStroke;
+    pattern?: number[];
 }
 
 type Line = LineBase & (
@@ -38,7 +41,7 @@ type Line = LineBase & (
     }
 );
 
-interface Arrow {
+type Arrow = AnnotBase & {
     type: "arrow";
     xy: [number, number];
     dxy: [number, number];
@@ -47,6 +50,11 @@ interface Arrow {
     xAxis?: string;
     yAxis?: string;
     zpos?: ZPos;
+}
+
+type Marker = AnnotBase &  {
+    xy: [number, number];
+    marker?: ThemeMarker;
 }
 
 type Anchor =
@@ -60,7 +68,7 @@ type Anchor =
     "bottom-center" |
     "bottom-right";
 
-interface Label {
+type Label = AnnotBase & {
     type: "label";
     xy: [number, number];
     text: string;
@@ -73,4 +81,4 @@ interface Label {
     zpos?: ZPos;
 }
 
-export type Annotation = Line | Arrow | Label;
+export type Annotation = Line | Arrow | Marker | Label;

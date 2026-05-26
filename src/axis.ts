@@ -23,12 +23,12 @@ export interface LogScale {
 
 export interface SharedScale {
     type: "shared";
-    ref?: Ref;
+    ref: Ref;
 }
 
-export type ScaleType = "auto" | "lin" | "log" | "shared";
+export type ScaleType = "auto" | "lin" | "log";
 
-export type Scale = ScaleType | AutoScale | LinScale | LogScale | SharedScale;
+export type Scale = [number | null, number | null] | AutoScale | LinScale | LogScale | SharedScale;
 
 export interface AutoTicksLocator {
     type: "auto";
@@ -66,7 +66,7 @@ export interface TimeDeltaTicksLocator {
 
 export type TicksLocatorType = "auto" | "maxn" | "pimultiple" | "log" | "datetime" | "timedelta";
 
-export type TicksLocator = TicksLocatorType | AutoTicksLocator | MaxNTicksLocator | PiMultipleTicksLocator | LogTicksLocator | DateTimeTicksLocator | TimeDeltaTicksLocator;
+export type TicksLocator = number[] | AutoTicksLocator | MaxNTicksLocator | PiMultipleTicksLocator | LogTicksLocator | DateTimeTicksLocator | TimeDeltaTicksLocator;
 
 
 export interface AutoTicksFormatter {
@@ -115,10 +115,10 @@ export interface Ticks {
 export interface Axis {
     title?: string;
     id?: string;
-    scale?: Scale;
+    scale?: ScaleType | Scale;
     side?: "top" | "right" | "bottom" | "left";
-    ticks?: Ticks | TicksLocator | TicksFormatterType;
-    grid?: "default" | ThemeStroke;
-    minorTicks?: Ticks | TicksLocator;
-    minorGrid?: "default" | ThemeStroke;
+    ticks?: boolean | TicksLocatorType | TicksLocator | TicksFormatterType | Ticks;
+    grid?: boolean | "default" | ThemeStroke;
+    minorTicks?: boolean | TicksLocatorType | TicksLocator;
+    minorGrid?: boolean | "default" | ThemeStroke;
 }

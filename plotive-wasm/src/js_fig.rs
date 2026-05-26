@@ -1,41 +1,43 @@
-use plotive::{des, geom};
+use plotive::{des, geom, style};
 use wasm_bindgen::JsValue;
 
-use crate::{get_prop_if_defined, js_annot, js_axis, js_series, js_style::extract_theme_color};
+use crate::{
+    extract_number_prop_if_defined, extract_type, get_prop_if_defined, js_annot, js_axis, js_err,
+    js_series,
+    js_style::{extract_theme_color, extract_theme_fill, extract_theme_stroke},
+    JsErr,
+};
 
-pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsValue> {
-    let space: Option<f32> = get_prop_if_defined(js_fig, "space")
-        .map(|v| match v.as_f64() {
-            Some(f) => Ok(f as f32),
-            None => Err(JsValue::from_str("'space' must be a number")),
-        })
-        .transpose()?;
-
-    let subplots: Option<(u32, u32)> = get_prop_if_defined(js_fig, "subplots")
-        .map(extract_row_col)
-        .transpose()?;
+pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsErr> {
+    let space = extract_number_prop_if_defined(js_fig, "space")?.map(|s| s as f32);
 
     let js_plot = get_prop_if_defined(js_fig, "plot");
     let js_plots = get_prop_if_defined(js_fig, "plots");
-    let plots = match (js_plot, js_plots) {
+    let plots: des::figure::Plots = match (js_plot, js_plots) {
         (Some(_), Some(_)) => {
-            return Err(JsValue::from_str(
-                "Cannot specify both 'plot' and 'plots' properties",
-            ))
+            return Err(js_err!("Cannot specify both 'plot' and 'plots' properties"))
         }
         (Some(js_plot), None) => {
             let plot = extract_plot(&js_plot)?;
-            des::figure::Plots::Plot(plot)
+            plot.into()
         }
-        (None, Some(js_plots)) => extract_plots(&js_plots, subplots, space)?,
+        (None, Some(js_plots)) => {
+            let plots = extract_plots(&js_plots, space)?;
+            plots.into()
+        }
         (None, None) => {
-            return Err(JsValue::from_str(
-                "Either 'plot' or 'plots' property is required to define the figure's content",
+            return Err(js_err!(
+                "Either 'plot' or 'plots' property must be defined for the figure"
             ))
         }
     };
 
     let mut fig = des::Figure::new(plots);
+
+    if let Some(js_size) = get_prop_if_defined(js_fig, "size") {
+        let size = extract_size(&js_size)?;
+        fig = fig.with_size(size);
+    }
 
     if let Some(js_fill) = get_prop_if_defined(js_fig, "fill") {
         let fill = if js_fill.is_null() {
@@ -49,9 +51,9 @@ pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsValue> {
     if let Some(js_title) = get_prop_if_defined(js_fig, "title") {
         let title_fmt = js_title
             .as_string()
-            .ok_or_else(|| JsValue::from_str("'title' property must be a string if defined"))?;
+            .ok_or_else(|| js_err!("'title' property must be a string if defined"))?;
         let title = plotive_text::parse_rich_text(&title_fmt)
-            .map_err(|e| JsValue::from_str(&format!("Failed to parse plot title: {}", e)))?;
+            .map_err(|e| js_err!("Failed to parse plot title: {}", e))?;
         fig = fig.with_title(title.into());
     }
 
@@ -59,10 +61,45 @@ pub fn extract_figure(js_fig: &JsValue) -> Result<des::Figure, JsValue> {
         fig = fig.with_legend(extract_figure_legend(&js_legend)?);
     }
 
+    if let Some(js_padding) = get_prop_if_defined(js_fig, "padding") {
+        let padding = extract_padding(&js_padding)?;
+        fig = fig.with_padding(padding);
+    }
+
     Ok(fig)
 }
 
-fn extract_row_col(js_subplots: JsValue) -> Result<(u32, u32), JsValue> {
+fn extract_size(js_size: &JsValue) -> Result<geom::Size, JsErr> {
+    if js_size.is_array() {
+        let js_size = js_sys::Array::from(js_size);
+        if js_size.length() != 2 {
+            return Err(js_err!("Size array must have length 2"));
+        }
+        let w = js_size
+            .get(0)
+            .as_f64()
+            .ok_or_else(|| js_err!("Size array must contain numeric values"))?
+            as f32;
+        let h = js_size
+            .get(1)
+            .as_f64()
+            .ok_or_else(|| js_err!("Size array must contain numeric values"))?
+            as f32;
+        Ok(geom::Size::new(w, h))
+    } else if js_size.is_object() {
+        let w = get_prop_if_defined(js_size, "width")
+            .and_then(|v| v.as_f64().map(|f| f as f32))
+            .ok_or_else(|| js_err!("Size object must have numeric 'width' property"))?;
+        let h = get_prop_if_defined(js_size, "height")
+            .and_then(|v| v.as_f64().map(|f| f as f32))
+            .ok_or_else(|| js_err!("Size object must have numeric 'height' property"))?;
+        Ok(geom::Size::new(w, h))
+    } else {
+        Err(js_err!("Size must be a an array of two numbers (width and height) or an object with 'width' and 'height' properties"))
+    }
+}
+
+fn extract_row_col(js_subplots: JsValue) -> Result<(u32, u32), JsErr> {
     if js_subplots.is_array() {
         let arr = js_sys::Array::from(&js_subplots);
         if arr.length() == 2 {
@@ -70,25 +107,19 @@ fn extract_row_col(js_subplots: JsValue) -> Result<(u32, u32), JsValue> {
             let cols = arr.get(1).as_f64().map(|f| f as u32);
             match (rows, cols) {
                 (Some(r), Some(c)) => Ok((r, c)),
-                _ => Err(JsValue::from_str(
-                    "subplots array must contain numeric values",
-                )),
+                _ => Err(js_err!("subplots array must contain numeric values",)),
             }
         } else {
-            Err(JsValue::from_str("subplots array must have length 2"))
+            Err(js_err!("subplots array must have length 2"))
         }
     } else {
-        Err(JsValue::from_str("subplots must be an object or array"))
+        Err(js_err!("subplots must be an object or array"))
     }
 }
 
-fn extract_plots(
-    js_plots: &JsValue,
-    subplots: Option<(u32, u32)>,
-    space: Option<f32>,
-) -> Result<des::figure::Plots, JsValue> {
+fn extract_plots(js_plots: &JsValue, space: Option<f32>) -> Result<des::figure::Plots, JsErr> {
     if !js_plots.is_array() {
-        return Err(JsValue::from_str("plots must be an array"));
+        return Err(js_err!("plots must be an array"));
     }
     let js_plots = js_sys::Array::from(js_plots);
     if js_plots.length() == 1 {
@@ -96,45 +127,30 @@ fn extract_plots(
         return Ok(plot.into());
     }
     if js_plots.length() == 0 {
-        return Err(JsValue::from_str("plots array cannot be empty"));
+        return Err(js_err!("plots array cannot be empty"));
     }
 
     let mut plots = Vec::with_capacity(js_plots.length() as usize);
-    let mut max_sp: Option<(u32, u32)> = None;
+    let mut subplots: Option<(u32, u32)> = None;
 
     for js_plot in js_plots.iter() {
         let plot = extract_plot(&js_plot)?;
         let subplot = get_prop_if_defined(&js_plot, "subplot")
-            .map(extract_row_col)
+            .map(|js_subplots| extract_row_col(js_subplots))
             .transpose()?;
-        match (subplot, &mut max_sp) {
+        match (subplot, &mut subplots) {
             (None, None) => (),
             (Some(sp), Some(subplots)) => {
                 subplots.0 = sp.0.max(subplots.0);
                 subplots.1 = sp.1.max(subplots.1);
             }
-            (Some(sp), None) => max_sp = Some(sp),
+            (Some(sp), None) => subplots = Some(sp),
             (None, Some(..)) => (),
         }
         plots.push((subplot, plot));
     }
 
-    let subplots = match (subplots, max_sp) {
-        (Some(subplots), Some(max_sp)) => {
-            if subplots.0 < max_sp.0 || subplots.1 < max_sp.1 {
-                return Err(JsValue::from_str(&format!(
-                    "Provided subplot grid {:?} is smaller than required grid {:?} for the plots.",
-                    subplots, max_sp
-                )));
-            }
-            subplots
-        }
-        (Some(subplots), None) => subplots,
-        (None, Some(max_sp)) => max_sp,
-        (None, None) => (js_plots.length(), 1),
-    };
-
-    let (rows, cols) = subplots;
+    let (rows, cols) = subplots.unwrap_or((js_plots.length() as u32, 1));
     let mut subplots = des::Subplots::new(rows, cols);
     // js has rows and cols starting at 1,
     // but des has rows and cols starting at 0
@@ -160,11 +176,11 @@ fn extract_plots(
     Ok(subplots.into())
 }
 
-fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
+fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsErr> {
     let js_series = get_prop_if_defined(js_plot, "series")
-        .ok_or_else(|| JsValue::from_str("'series' property must be defined for plots"))?;
+        .ok_or_else(|| js_err!("'series' property must be defined for plots"))?;
     if !js_series.is_array() {
-        return Err(JsValue::from_str("'series' property must be an array"));
+        return Err(js_err!("'series' property must be an array"));
     }
     let js_series = js_sys::Array::from(&js_series);
     let mut series = Vec::with_capacity(js_series.length() as usize);
@@ -182,7 +198,7 @@ fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
 
     if let Some(js_title) = get_prop_if_defined(js_plot, "title") {
         let Some(title) = js_title.as_string() else {
-            return Err(JsValue::from_str("'title' must be a string"));
+            return Err(js_err!("'title' must be a string"));
         };
         plot = plot.with_title(title.into());
     }
@@ -210,6 +226,34 @@ fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
         }
     }
 
+    if let Some(js_fill) = get_prop_if_defined(js_plot, "fill") {
+        let fill = extract_theme_fill(&js_fill)?;
+        plot = plot.with_fill(fill);
+    }
+
+    if let Some(js_border) = get_prop_if_defined(js_plot, "border") {
+        let border = if js_border.is_null() {
+            None
+        } else {
+            Some(extract_plot_border(&js_border)?)
+        };
+        plot = plot.with_border(border);
+    }
+
+    if let Some(js_insets) = get_prop_if_defined(js_plot, "insets") {
+        let insets = if js_insets.is_null() {
+            None
+        } else {
+            Some(extract_plot_insets(&js_insets)?)
+        };
+        plot = plot.with_insets(insets);
+    }
+
+    if let Some(js_cbar) = get_prop_if_defined(js_plot, "colorbar") {
+        let cbar = extract_colorbar(&js_cbar)?;
+        plot = plot.with_colorbar(cbar);
+    }
+
     if let Some(js_annots) = get_prop_if_defined(js_plot, "annotations") {
         let js_annots = js_sys::Array::from(&js_annots);
         for js_annot in js_annots.iter() {
@@ -221,35 +265,95 @@ fn extract_plot(js_plot: &JsValue) -> Result<des::Plot, JsValue> {
     Ok(plot)
 }
 
-fn fig_legend_pos_from_str(pos_str: &str) -> Result<des::figure::LegendPos, JsValue> {
+fn extract_plot_border(js_border: &JsValue) -> Result<des::plot::Border, JsErr> {
+    let typ = extract_type(js_border)?.to_lowercase();
+    match typ.as_str() {
+        "box" => {
+            let stroke = get_prop_if_defined(js_border, "stroke")
+                .map(|js_stroke| extract_theme_stroke(&js_stroke))
+                .transpose()?
+                .unwrap_or_else(|| style::theme::Col::Foreground.into());
+            Ok(des::plot::Border::Box(stroke))
+        }
+        "axis" => {
+            let stroke = get_prop_if_defined(js_border, "stroke")
+                .map(|js_stroke| extract_theme_stroke(&js_stroke))
+                .transpose()?
+                .unwrap_or_else(|| style::theme::Col::Foreground.into());
+            Ok(des::plot::Border::Axis(stroke))
+        }
+        "arrow" => {
+            let mut arrow = des::plot::AxisArrow::default();
+            if let Some(js_size) = get_prop_if_defined(js_border, "stroke") {
+                let stroke = extract_theme_stroke(&js_size)?;
+                arrow.stroke = stroke;
+            }
+            if let Some(size) = extract_number_prop_if_defined(js_border, "size")? {
+                arrow.size = size as f32;
+            }
+            if let Some(overflow) = extract_number_prop_if_defined(js_border, "overflow")? {
+                arrow.overflow = overflow as f32;
+            }
+            Ok(des::plot::Border::AxisArrow(arrow))
+        }
+        _ => return Err(js_err!("Unknown border type: \"{}\"", typ)),
+    }
+}
+
+fn extract_plot_insets(js_insets: &JsValue) -> Result<des::plot::Insets, JsErr> {
+    if let Some(insets_str) = js_insets.as_string() {
+        if insets_str.to_lowercase() == "auto" {
+            Ok(des::plot::Insets::Auto)
+        } else {
+            Err(js_err!("'insets' string value must be 'auto' if defined"))
+        }
+    } else if js_insets.is_array() {
+        let arr = js_sys::Array::from(js_insets);
+        if arr.length() != 2 {
+            return Err(js_err!("'insets' array must have length 2"));
+        }
+        let hor = arr
+            .get(0)
+            .as_f64()
+            .ok_or_else(|| js_err!("First element of 'insets' array must be a number"))?
+            as f32;
+        let ver = arr
+            .get(1)
+            .as_f64()
+            .ok_or_else(|| js_err!("Second element of 'insets' array must be a number"))?
+            as f32;
+        Ok(des::plot::Insets::Fixed(hor, ver))
+    } else {
+        Err(js_err!("'insets' must be either a string or an array"))
+    }
+}
+
+fn fig_legend_pos_from_str(pos_str: &str) -> Result<des::figure::LegendPos, JsErr> {
     match pos_str {
         "top" => Ok(des::figure::LegendPos::Top),
         "right" => Ok(des::figure::LegendPos::Right),
         "bottom" => Ok(des::figure::LegendPos::Bottom),
         "left" => Ok(des::figure::LegendPos::Left),
-        _ => Err(JsValue::from_str(&format!(
-            "Unknown legend position: \"{}\"",
-            pos_str
-        ))),
+        _ => Err(js_err!("Unknown legend position: \"{}\"", pos_str)),
     }
 }
 
-fn extract_figure_legend(js_legend: &JsValue) -> Result<des::FigLegend, JsValue> {
+fn extract_figure_legend(js_legend: &JsValue) -> Result<des::FigLegend, JsErr> {
     let mut pos = des::figure::LegendPos::default();
     if let Some(pos_str) = js_legend.as_string() {
         pos = fig_legend_pos_from_str(&pos_str)?;
         return Ok(des::FigLegend::new(pos));
     }
     if let Some(js_pos) = get_prop_if_defined(js_legend, "pos") {
-        let pos_str = js_pos.as_string().ok_or_else(|| {
-            JsValue::from_str("'legend.pos' property must be a string if defined")
-        })?;
+        let pos_str = js_pos
+            .as_string()
+            .ok_or_else(|| js_err!("'legend.pos' property must be a string if defined"))?;
         pos = fig_legend_pos_from_str(&pos_str)?;
     }
     Ok(extract_legend(js_legend, pos)?)
 }
 
-fn plot_legend_pos_from_str(pos_str: &str) -> Result<des::plot::LegendPos, JsValue> {
+fn plot_legend_pos_from_str(pos_str: &str) -> Result<des::plot::LegendPos, JsErr> {
     match pos_str {
         "out-top" => Ok(des::plot::LegendPos::OutTop),
         "out-right" => Ok(des::plot::LegendPos::OutRight),
@@ -263,34 +367,32 @@ fn plot_legend_pos_from_str(pos_str: &str) -> Result<des::plot::LegendPos, JsVal
         "in-bottom-left" => Ok(des::plot::LegendPos::InBottomLeft),
         "in-left" => Ok(des::plot::LegendPos::InLeft),
         "in-top-left" => Ok(des::plot::LegendPos::InTopLeft),
-        _ => Err(JsValue::from_str(&format!(
-            "Unknown legend position: \"{}\"",
-            pos_str
-        ))),
+        _ => Err(js_err!("Unknown legend position: \"{}\"", pos_str)),
     }
 }
 
-fn extract_plot_legend(js_legend: &JsValue) -> Result<des::PlotLegend, JsValue> {
+fn extract_plot_legend(js_legend: &JsValue) -> Result<des::PlotLegend, JsErr> {
     let mut pos = des::plot::LegendPos::default();
     if let Some(pos_str) = js_legend.as_string() {
         pos = plot_legend_pos_from_str(&pos_str)?;
         return Ok(des::PlotLegend::new(pos));
     }
     if let Some(js_pos) = get_prop_if_defined(js_legend, "pos") {
-        let pos_str = js_pos.as_string().ok_or_else(|| {
-            JsValue::from_str("'legend.pos' property must be a string if defined")
-        })?;
+        let pos_str = js_pos
+            .as_string()
+            .ok_or_else(|| js_err!("'legend.pos' property must be a string if defined"))?;
         pos = plot_legend_pos_from_str(&pos_str)?;
     }
     Ok(extract_legend(js_legend, pos)?)
 }
 
-fn extract_legend<P: Default>(js_legend: &JsValue, pos: P) -> Result<des::Legend<P>, JsValue> {
+fn extract_legend<P: Default>(js_legend: &JsValue, pos: P) -> Result<des::Legend<P>, JsErr> {
     let mut legend = des::Legend::new(pos);
     if let Some(js_columns) = get_prop_if_defined(js_legend, "columns") {
-        let columns = js_columns.as_f64().ok_or_else(|| {
-            JsValue::from_str("'legend.columns' property must be a number if defined")
-        })? as u32;
+        let columns = js_columns
+            .as_f64()
+            .ok_or_else(|| js_err!("'legend.columns' property must be a number if defined"))?
+            as u32;
         legend = legend.with_columns(columns);
     }
     if let Some(js_padding) = get_prop_if_defined(js_legend, "padding") {
@@ -312,35 +414,78 @@ fn extract_legend<P: Default>(js_legend: &JsValue, pos: P) -> Result<des::Legend
         } else if js_spacing.is_array() {
             let js_spacing = js_sys::Array::from(&js_spacing);
             if js_spacing.length() != 2 {
-                return Err(JsValue::from_str(
+                return Err(js_err!(
                     "'legend.spacing' array must have length 2 (for horizontal and vertical spacing)",
                 ));
             }
-            let h = js_spacing.get(0).as_f64().ok_or_else(|| {
-                JsValue::from_str("'legend.spacing' array must contain numeric values")
-            })? as f32;
-            let v = js_spacing.get(1).as_f64().ok_or_else(|| {
-                JsValue::from_str("'legend.spacing' array must contain numeric values")
-            })? as f32;
+            let h = js_spacing
+                .get(0)
+                .as_f64()
+                .ok_or_else(|| js_err!("'legend.spacing' array must contain numeric values"))?
+                as f32;
+            let v = js_spacing
+                .get(1)
+                .as_f64()
+                .ok_or_else(|| js_err!("'legend.spacing' array must contain numeric values"))?
+                as f32;
             legend = legend.with_spacing(geom::Size::new(h, v));
         } else {
-            return Err(JsValue::from_str(
+            return Err(js_err!(
                 "'legend.spacing' must be a number or an array of two numbers (horizontal and vertical spacing).",
             ));
         }
     }
     if let Some(js_margin) = get_prop_if_defined(js_legend, "margin") {
-        let margin = js_margin.as_f64().ok_or_else(|| {
-            JsValue::from_str("'legend.margin' property must be a number if defined")
-        })? as f32;
+        let margin = js_margin
+            .as_f64()
+            .ok_or_else(|| js_err!("'legend.margin' property must be a number if defined"))?
+            as f32;
         legend = legend.with_margin(margin);
     }
     Ok(legend)
 }
 
-fn extract_padding(js_padding: &JsValue) -> Result<geom::Padding, JsValue> {
+fn extract_colorbar(js_cbar: &JsValue) -> Result<des::ColorBar, JsErr> {
+    let mut cbar = if let Some(js_pos) = get_prop_if_defined(js_cbar, "pos") {
+        let pos_str = js_pos
+            .as_string()
+            .ok_or_else(|| js_err!("'colorbar.pos' property must be a string if defined"))?;
+        let pos = match pos_str.as_str() {
+            "auto" => des::colorbar::Pos::default(),
+            "right" => des::colorbar::Pos::Right,
+            "left" => des::colorbar::Pos::Left,
+            "top" => des::colorbar::Pos::Top,
+            "bottom" => des::colorbar::Pos::Bottom,
+            _ => return Err(js_err!("Unknown colorbar position: \"{}\"", pos_str)),
+        };
+        des::ColorBar::new(pos)
+    } else {
+        des::ColorBar::default()
+    };
+    if let Some(width) = extract_number_prop_if_defined(js_cbar, "width")? {
+        cbar = cbar.with_width(width as f32);
+    }
+    if let Some(margin) = extract_number_prop_if_defined(js_cbar, "margin")? {
+        cbar = cbar.with_margin(margin as f32);
+    }
+    if let Some(js_border) = get_prop_if_defined(js_cbar, "border") {
+        let border = if js_border.is_null() {
+            None
+        } else {
+            Some(extract_theme_stroke(&js_border)?)
+        };
+        cbar = cbar.with_border(border);
+    }
+    if let Some(js_ticks) = get_prop_if_defined(js_cbar, "ticks") {
+        let ticks = js_axis::extract_ticks_locator(&js_ticks)?;
+        cbar = cbar.with_ticks_locator(ticks);
+    }
+    Ok(cbar)
+}
+
+fn extract_padding(js_padding: &JsValue) -> Result<geom::Padding, JsErr> {
     if js_padding.is_null() || js_padding.is_undefined() {
-        Err(JsValue::from_str("Padding cannot be null or undefined"))
+        Err(js_err!("Padding cannot be null or undefined"))
     } else if let Some(js_padding) = js_padding.as_f64() {
         Ok(geom::Padding::Even(js_padding as f32))
     } else if js_padding.is_array() {
@@ -348,38 +493,38 @@ fn extract_padding(js_padding: &JsValue) -> Result<geom::Padding, JsValue> {
         match js_padding.length() {
             1 => {
                 let pad = js_padding.get(0).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 Ok(geom::Padding::Even(pad))
             }
             2 => {
                 let h = js_padding.get(0).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 let v = js_padding.get(1).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 Ok(geom::Padding::Center { h, v })
             }
             4 => {
                 let t = js_padding.get(0).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 let r = js_padding.get(1).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 let b = js_padding.get(2).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 let l = js_padding.get(3).as_f64().ok_or_else(|| {
-                    JsValue::from_str("Padding array must contain numeric values")
+                    js_err!("Padding array must contain numeric values")
                 })? as f32;
                 Ok(geom::Padding::Custom {
                     t, r, b, l
                 })
             }
             _ => {
-                Err(JsValue::from_str(
+                Err(js_err!(
                     "Padding array must have length 1, 2 (for horizontal and vertical) or 4 (for left, right, top, bottom)",
                 ))
             }
@@ -387,22 +532,18 @@ fn extract_padding(js_padding: &JsValue) -> Result<geom::Padding, JsValue> {
     } else if js_padding.is_object() {
         let t = get_prop_if_defined(js_padding, "top")
             .and_then(|v| v.as_f64().map(|f| f as f32))
-            .ok_or_else(|| JsValue::from_str("Padding object must have numeric 'top' property"))?;
+            .ok_or_else(|| js_err!("Padding object must have numeric 'top' property"))?;
         let r = get_prop_if_defined(js_padding, "right")
             .and_then(|v| v.as_f64().map(|f| f as f32))
-            .ok_or_else(|| {
-                JsValue::from_str("Padding object must have numeric 'right' property")
-            })?;
+            .ok_or_else(|| js_err!("Padding object must have numeric 'right' property"))?;
         let b = get_prop_if_defined(js_padding, "bottom")
             .and_then(|v| v.as_f64().map(|f| f as f32))
-            .ok_or_else(|| {
-                JsValue::from_str("Padding object must have numeric 'bottom' property")
-            })?;
+            .ok_or_else(|| js_err!("Padding object must have numeric 'bottom' property"))?;
         let l = get_prop_if_defined(js_padding, "left")
             .and_then(|v| v.as_f64().map(|f| f as f32))
-            .ok_or_else(|| JsValue::from_str("Padding object must have numeric 'left' property"))?;
+            .ok_or_else(|| js_err!("Padding object must have numeric 'left' property"))?;
         Ok(geom::Padding::Custom { t, r, b, l })
     } else {
-        Err(JsValue::from_str("Padding must be a number or an object with 'left', 'right', 'top', 'bottom' properties"))
+        Err(js_err!("Padding must be a number or an object with 'left', 'right', 'top', 'bottom' properties"))
     }
 }
