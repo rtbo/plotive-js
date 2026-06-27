@@ -31,12 +31,12 @@ export default function (): Figure {
                 xAxis: {
                     title: "Sepal Length (cm)",
                     ticks: "auto",
-                    grid: "default",
+                    grid: "auto",
                 },
                 yAxis: {
                     title: "Sepal Width (cm)",
                     ticks: "auto",
-                    grid: "default",
+                    grid: "auto",
                 },
             }
         ],

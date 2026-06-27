@@ -24,7 +24,7 @@ export default function (): Figure {
                         ref: "x2",
                     },
                     ticks: "auto",
-                    grid: "default",
+                    grid: "auto",
                 }
             },
             {
@@ -36,7 +36,7 @@ export default function (): Figure {
                 xAxis: {
                     id: "x2",
                     ticks: "pimultiple",
-                    grid: "default",
+                    grid: "auto",
                 },
             }
         ],

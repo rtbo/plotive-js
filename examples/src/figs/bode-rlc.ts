@@ -26,7 +26,11 @@ export default function (): Figure {
     });
 
     return {
-        title: `Bode plot of RLC circuit (L = ${humanize(L)}H, C = ${humanize(C)}F)`,
+        // Text in array is parsed as rich text, with one line per element
+        title: [
+            `Bode plot of RLC circuit`,
+            `[size=18;italic]L = ${humanize(L)}H, C = ${humanize(C)}F[/size;italic]`,
+        ],
 
         legend: "right",
         plots: [
@@ -38,19 +42,19 @@ export default function (): Figure {
                         ref: "freq",
                     },
                     ticks: "auto",
-                    minorTicks: true,
-                    grid: true,
+                    minorTicks: "auto",
+                    grid: "auto",
                 },
                 yAxis: {
                     title: "Magnitude (dB)",
                     ticks: "auto",
-                    grid: true,
+                    grid: "auto",
                 },
                 annotations: [
                     {
                         type: "line",
                         vertical: cutoff,
-                        pattern: [5, 5],
+                        pattern: "dashed",
                     },
                     {
                         type: "label",
@@ -65,7 +69,7 @@ export default function (): Figure {
                             [cutoff, 0],
                             [cutoff * 10, -40],
                         ],
-                        pattern: [5, 5],
+                        pattern: "dashed",
                     },
                     {
                         type: "label",
@@ -81,13 +85,13 @@ export default function (): Figure {
                     scale: "log",
                     id: "freq",
                     ticks: "auto",
-                    grid: true,
-                    minorTicks: true,
+                    grid: "auto",
+                    minorTicks: "auto",
                 },
                 yAxis: {
                     title: "Phase (rad)",
                     ticks: "pimultiple",
-                    grid: true,
+                    grid: "auto",
                 }
             }
         ],

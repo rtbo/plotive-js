@@ -1,6 +1,8 @@
-import { ThemeStroke } from "./style";
+import { Text, TextProps } from ".";
+import { ThemeColor, ThemeStroke } from "./style";
+import { DateTime } from "./time";
 
-export type Bound = string | number;
+export type Bound = DateTime | number;
 
 export type Ref = string | number;
 
@@ -28,7 +30,7 @@ export interface SharedScale {
 
 export type ScaleType = "auto" | "lin" | "log";
 
-export type Scale = [number | null, number | null] | AutoScale | LinScale | LogScale | SharedScale;
+export type Scale = [Bound | null, Bound | null] | AutoScale | LinScale | LogScale | SharedScale;
 
 export interface AutoTicksLocator {
     type: "auto";
@@ -50,14 +52,15 @@ export interface LogTicksLocator {
     base?: number;
 }
 
-export type DateTimeUnit = "year" | "month" | "day" | "hour" | "min" | "sec" | "milli" | "micro";
+export type DateTimeUnit = "year" | "years" | "month" | "months" | "day" | "days" |
+        "hour" | "hours" | "min" | "mins" | "sec" | "secs" | "milli" | "millis" | "micro" | "micros";
 
 export interface DateTimeTicksLocator {
     type: "datetime";
     period?: [number, DateTimeUnit];
 }
 
-export type TimeDeltaUnit = "day" | "hour" | "min" | "sec" | "milli" | "micro";
+export type TimeDeltaUnit = "day" | "days" | "hour" | "hours" | "min" | "mins" | "sec" | "secs" | "milli" | "millis" | "micro" | "micros";
 
 export interface TimeDeltaTicksLocator {
     type: "timedelta";
@@ -110,15 +113,17 @@ export type TicksFormatter =
 export interface Ticks {
     locator?: TicksLocator;
     formatter?: TicksFormatter;
+    label_props?: TextProps;
+    color?: ThemeColor;
 }
 
 export interface Axis {
-    title?: string;
+    title?: Text;
     id?: string;
     scale?: ScaleType | Scale;
     side?: "top" | "right" | "bottom" | "left";
-    ticks?: boolean | TicksLocatorType | TicksLocator | TicksFormatterType | Ticks;
-    grid?: boolean | "default" | ThemeStroke;
-    minorTicks?: boolean | TicksLocatorType | TicksLocator;
-    minorGrid?: boolean | "default" | ThemeStroke;
+    ticks?: TicksLocatorType | TicksLocator | TicksFormatterType | Ticks;
+    grid?: "auto" | ThemeColor | ThemeStroke;
+    minorTicks?: TicksLocatorType | TicksLocator;
+    minorGrid?: "auto" | ThemeColor | ThemeStroke;
 }

@@ -1,4 +1,4 @@
-import { ThemeColor, ThemeFill, ThemeMarker, ThemeStroke } from "./style";
+import { ThemeColor, ThemeFill, ThemeMarker, ThemeStroke, Pattern } from "./style";
 
 export type ZPos = "below-series" | "above-series";
 
@@ -11,7 +11,7 @@ interface AnnotBase {
 type LineBase = AnnotBase & {
     type: "line";
     stroke?: ThemeStroke;
-    pattern?: number[];
+    pattern?: Pattern;
 }
 
 type Line = LineBase & (
@@ -73,7 +73,7 @@ type Label = AnnotBase & {
     xy: [number, number];
     text: string;
     anchor?: Anchor;
-    frame?: [ThemeFill, ThemeStroke];
+    frame?: [ThemeFill | null, ThemeStroke | null];
     color?: ThemeColor;
     angle?: number;
     xAxis?: string;

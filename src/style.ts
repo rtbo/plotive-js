@@ -14,10 +14,15 @@ export interface ThemePalette {
     legendFill?: Color;
 }
 
-export type Theme = "light" | "dark" | "catppuccin-mocha" | "catppuccin-macchiato" | "catppuccin-frappe" | "catppuccin-latte" | ThemePalette;
+export type Theme = "light" | "dark" |
+        "catppuccin-mocha" | "catppuccin-macchiato" | "catppuccin-frappe" | "catppuccin-latte" |
+        "dracula" | "alucard" |
+        ThemePalette;
+
 
 export type Palette = "black" | "standard" | "pastel" | "tol-bright" | "okabe-ito" |
     "catppuccin-mocha" | "catppuccin-macchiato" | "catppuccin-frappe" | "catppuccin-latte" |
+    "dracula" | "alucard" |
     Color[];
 
 export interface Style {
@@ -61,6 +66,14 @@ export const CATPPUCCIN_LATTE: Style = {
     theme: "catppuccin-latte",
     palette: "catppuccin-latte",
 }
+export const DRACULA: Style = {
+    theme: "dracula",
+    palette: "dracula",
+}
+export const ALUCARD: Style = {
+    theme: "alucard",
+    palette: "alucard",
+}
 export const DEFAULT = LIGHT;
 
 export const BUILTIN_STYLES = {
@@ -73,6 +86,8 @@ export const BUILTIN_STYLES = {
     "catppuccin-macchiato": CATPPUCCIN_MACCHIATO,
     "catppuccin-frappe": CATPPUCCIN_FRAPPE,
     "catppuccin-latte": CATPPUCCIN_LATTE,
+    "dracula": DRACULA,
+    "alucard": ALUCARD,
 }
 export type BuiltinStyleName = keyof typeof BUILTIN_STYLES;
 
@@ -83,10 +98,12 @@ export interface Fill<C = Color> {
 export type ThemeFill = Fill<ThemeColor>;
 export type SeriesFill = Fill<SeriesColor>;
 
+export type Pattern = "solid" | "dashed" | "dotted" | "dash-dot" | number[];
+
 export interface Stroke<C = Color> {
     color: C;
     width?: number;
-    pattern?: number[];
+    pattern?: Pattern;
     opacity?: number;
 }
 

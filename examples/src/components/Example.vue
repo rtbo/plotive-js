@@ -56,6 +56,7 @@ watchEffect(() => {
     // Track all reactive dependencies touched while building the figure,
     // including slider-driven store values used by props.figureFn.
     const fig = props.figureFn();
+    console.log("drawing figure:", fig);
     void drawFigure(fig);
 });
 

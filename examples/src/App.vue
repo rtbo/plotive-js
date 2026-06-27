@@ -100,8 +100,8 @@ function formatExponential(value: number) {
     <main class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
       <Example name="Simple Figure" :figure-fn="sineFigure" :figure-code="sineCode" />
       <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
-      <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
-      <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
+     <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
+       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
       <Example name="Colormap and Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
       <Example name="Reactive Annotated Bode Plot" :figure-fn="bodeFigure" :figure-code="bodeCode">
         <div class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-4 px-2 py-2 sm:px-3">

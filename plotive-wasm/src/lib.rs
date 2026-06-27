@@ -1,14 +1,14 @@
 use js_sys::Reflect;
-use plotive::Prepare;
+use plotive::{Prepare, des::Figure};
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
 mod canvas_surface;
 mod svg_surface;
-mod js_annot;
-mod js_axis;
-mod js_fig;
-mod js_series;
+// mod js_annot;
+// mod js_axis;
+// mod js_fig;
+// mod js_series;
 mod js_style;
 
 #[derive(Debug)]
@@ -70,7 +70,8 @@ pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, Js
     use base64::prelude::*;
     use plotive_pxl::PxlRender;
 
-    let fig = js_fig::extract_figure(&fig)?;
+    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+    //let fig = js_fig::extract_figure(&fig)?;
     let style = js_style::extract_style(&style)?;
     let params = plotive_pxl::Params {
         style,
@@ -86,7 +87,7 @@ pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, Js
 
 #[wasm_bindgen]
 pub fn render_to_canvas(fig: JsValue, canvas: web_sys::HtmlCanvasElement, style: JsValue) -> Result<(), JsError> {
-    let fig = js_fig::extract_figure(&fig)?;
+    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
     let style = js_style::extract_style(&style)?;
     let mut surf = canvas_surface::CanvasSurface::new(canvas);
     let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
@@ -96,7 +97,7 @@ pub fn render_to_canvas(fig: JsValue, canvas: web_sys::HtmlCanvasElement, style:
 
 #[wasm_bindgen]
 pub fn render_to_svg(fig: JsValue, svg: web_sys::SvgElement, style: JsValue) -> Result<(), JsError> {
-    let fig = js_fig::extract_figure(&fig)?;
+    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
     let style = js_style::extract_style(&style)?;
     let mut surf = svg_surface::SvgSurface::new(svg);
     let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
@@ -107,56 +108,4 @@ pub fn render_to_svg(fig: JsValue, svg: web_sys::SvgElement, style: JsValue) -> 
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {
     let name = JsValue::from_str(prop);
     Reflect::get(obj, &name).ok().filter(|v| !v.is_undefined())
-}
-
-fn extract_type(js_obj: &JsValue) -> Result<String, JsErr> {
-    get_prop_if_defined(js_obj, "type")
-        .ok_or_else(|| js_err!("'type' property is required."))?
-        .as_string()
-        .ok_or_else(|| js_err!("'type' property must be a string."))
-}
-
-fn extract_string_prop(js_obj: &JsValue, prop: &str) -> Result<String, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .ok_or_else(|| js_err!("'{}' property is required.", prop))?
-        .as_string()
-        .ok_or_else(|| js_err!("'{}' property must be a string.", prop))
-}
-
-fn extract_string_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option<String>, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .map(|v| {
-            v.as_string()
-                .ok_or_else(|| js_err!("'{}' property must be a string.", prop))
-        })
-        .transpose()
-}
-
-fn extract_number_prop_if_defined(js_obj: &JsValue, prop: &str) -> Result<Option<f64>, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .map(|v| {
-            v.as_f64()
-                .ok_or_else(|| js_err!("'{}' property must be a number.", prop))
-        })
-        .transpose()
-}
-
-fn extract_array_prop(
-    js_obj: &JsValue,
-    prop: &str,
-) -> Result<js_sys::Array, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .ok_or_else(|| js_err!("'{}' property is required.", prop))?
-        .dyn_into::<js_sys::Array>()
-        .map_err(|_| js_err!("'{}' property must be an array.", prop))
-}
-
-fn extract_array_prop_if_defined(
-    js_obj: &JsValue,
-    prop: &str,
-) -> Result<Option<js_sys::Array>, JsErr> {
-    get_prop_if_defined(js_obj, prop)
-        .map(|v| v.dyn_into::<js_sys::Array>())
-        .transpose()
-        .map_err(|_| js_err!("'{}' property must be an array.", prop))
 }

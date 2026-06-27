@@ -25,11 +25,11 @@ export default function (): Figure {
             },
             xAxis: {
                 ticks: "auto",
-                grid: "default",
+                grid: "auto",
             },
             yAxis: {
                 ticks: "auto",
-                grid: "default",
+                grid: "auto",
             },
             colorbar: "auto"
         },

@@ -18,8 +18,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3))
       plotive:
-        specifier: file:..
-        version: file:..
+        specifier: link:..
+        version: link:..
       primevue:
         specifier: ^4.5.5
         version: 4.5.5(vue@3.5.34(typescript@6.0.3))
@@ -468,9 +468,6 @@ packages:
   '@types/node@24.12.4':
     resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
 
-  '@types/seedrandom@3.0.8':
-    resolution: {integrity: sha512-TY1eezMU2zH2ozQoAFAQFOPpvP15g+ZgSfTZt31AUUH/Rxtnz3H+A/Sv1Snw2/amp//omibc+AEkTaA8KUeOLQ==}
-
   '@vitejs/plugin-vue@6.0.7':
     resolution: {integrity: sha512-km+p+XdSz9Sxm5rqUbqcSfZYaAniKxWBj1KURl+Jr7UaPvvX7BmaWMdP69I5rrFDeQGyxAG7NXdc57vz+snhWg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -891,9 +888,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  plotive@file:..:
-    resolution: {directory: .., type: directory}
 
   postcss@8.5.14:
     resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
@@ -1494,8 +1488,6 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/seedrandom@3.0.8': {}
-
   '@vitejs/plugin-vue@6.0.7(vite@8.0.13(@types/node@24.12.4)(jiti@2.7.0))(vue@3.5.34(typescript@6.0.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
@@ -1871,8 +1863,6 @@ snapshots:
       vue: 3.5.34(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
-
-  plotive@file:..: {}
 
   postcss@8.5.14:
     dependencies:

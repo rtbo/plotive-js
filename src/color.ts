@@ -1099,4 +1099,4 @@ export type XkcdColor =
     "purple";
 
 
-export type Color = Css4Color | XkcdColor | [number, number, number] | [number, number, number, number];
+export type Color = Css4Color | XkcdColor | string | [number, number, number] | [number, number, number, number];

@@ -27,7 +27,8 @@
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
     "examples:install": "pnpm --dir examples install",
-    "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples run dev"
+    "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples run dev",
+    "examples:devFast": "pnpm run build:prod && pnpm run examples:install && pnpm --dir examples run dev"
   },
   "main": "./dist/node/cjs/index.cjs",
   "module": "./dist/web/index.mjs",

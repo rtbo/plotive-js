@@ -2,7 +2,6 @@ import { BuiltinStyleName, Style, ThemeColor, ThemeFill, ThemeStroke } from "./s
 import { Series } from './series';
 import { Annotation } from './annot';
 import { Axis, TicksLocator } from './axis';
-import { normalizeFig } from './norm.js';
 import { getWasmApi } from "./wasm-api";
 
 export { BUILTIN_STYLES } from "./style";
@@ -10,9 +9,30 @@ export type { LerpMethod, ColorMap, BuiltinCmap } from "./cmap";
 export type { Series } from "./series";
 export type { BuiltinStyleName, Style, Theme, Palette } from "./style";
 
+export type FontWeight = "thin" | "extra-light" | "light" | "normal" | "medium" | "semi-bold" | "bold" | "extra-bold" | "black" | number;
+
+export interface TextProps {
+    family?: string | string[];
+    weight?: FontWeight | number;
+    width?: string | number;
+    style?: string;
+    size?: number;
+    color?: ThemeFill;
+    outline?: ThemeStroke;
+    underline?: boolean;
+    strikeout?: boolean;
+}
+
+export type Text = string | string[] | [string, Record<string, TextProps>] | {
+    fmt: string;
+    classes: Record<string, TextProps>;
+};
+
 export type Size = [number, number] | { width: number; height: number };
 
-export type Padding = number | [number, number] | [number, number, number, number];
+export type Padding = number |
+    [number, number] | { hor: number, ver: number } |
+    [number, number, number, number] | { top: number, right: number, bottom: number, left: number };
 
 export type FigLegendPos = "top" | "right" | "bottom" | "left";
 
@@ -69,7 +89,7 @@ export type ColorBarPos = "auto" | "left" | "right" | "top" | "bottom";
 export interface ColorBar {
     pos?: ColorBarPos;
     width?: number;
-    title?: string;
+    title?: Text;
     border?: ThemeStroke | null;
     ticks?: TicksLocator;
     margin?: number;
@@ -77,7 +97,7 @@ export interface ColorBar {
 
 export interface Plot {
     series: Series | Series[];
-    title?: string;
+    title?: Text;
     xAxis?: Axis;
     xAxes?: Axis[];
     yAxis?: Axis;
@@ -93,7 +113,7 @@ export interface Plot {
 
 export interface Figure {
     size?: Size;
-    title?: string;
+    title?: Text;
     plot?: Plot;
     plots?: Plot[];
     space?: number;
@@ -125,9 +145,9 @@ export async function renderToSvgString(fig: Figure, style?: BuiltinStyleName | 
 }
 
 export async function renderToPngDataUrl(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
-    const normalized = normalizeFig(fig);
+    //const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
-    return wasm.render_to_png_data_url(normalized, style);
+    return wasm.render_to_png_data_url(fig, style);
 }
 
 export async function renderAsSvg(elem: Element, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
@@ -136,9 +156,9 @@ export async function renderAsSvg(elem: Element, fig: Figure, style?: BuiltinSty
 }
 
 export async function renderToSvg(elem: SVGElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    const normalized = normalizeFig(fig);
+    //const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
-    await wasm.render_to_svg(normalized, elem, style);
+    await wasm.render_to_svg(fig, elem, style);
 }
 
 export async function renderToImg(elem: HTMLImageElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
@@ -147,7 +167,9 @@ export async function renderToImg(elem: HTMLImageElement, fig: Figure, style?: B
 }
 
 export async function renderToCanvas(canvas: HTMLCanvasElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    const normalized = normalizeFig(fig);
+    console.log("will render to canvas");
+    console.log("fig:", fig);
+    // const normalized = normalizeFig(fig);
     const wasm = await getWasmApi();
-    await wasm.render_to_canvas(normalized, canvas, style);
+    await wasm.render_to_canvas(fig, canvas, style);
 }
