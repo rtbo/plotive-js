@@ -5,8 +5,8 @@ const DIRS_TO_CLEAN = [
     path.resolve(__dirname, '../dist'),
     path.resolve(__dirname, '../dist-dev'),
     path.resolve(__dirname, '../src/wasm'),
-    path.resolve(__dirname, '../examples/dist'),
-    path.resolve(__dirname, '../examples/node_modules/.vite'),
+    path.resolve(__dirname, '../examples_app/dist'),
+    path.resolve(__dirname, '../examples_app/node_modules/.vite'),
 ];
 
 for (const dir of DIRS_TO_CLEAN) {

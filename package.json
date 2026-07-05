@@ -26,9 +26,9 @@
     "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
     "prepublishOnly": "pnpm run build",
     "pack:check": "pnpm run build && npm pack --dry-run",
-    "examples:install": "pnpm --dir examples install",
-    "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples run dev",
-    "examples:devFast": "pnpm run build:prod && pnpm run examples:install && pnpm --dir examples run dev"
+    "examples:install": "pnpm --dir examples_app install",
+    "examples:dev": "pnpm run build:dev && pnpm run examples:install && pnpm --dir examples_app run dev",
+    "examples:devFast": "pnpm run build:prod && pnpm run examples:install && pnpm --dir examples_app run dev"
   },
   "main": "./dist/node/cjs/index.cjs",
   "module": "./dist/web/index.mjs",

@@ -5,22 +5,22 @@ import SelectButton from 'primevue/selectbutton';
 import Select from 'primevue/select';
 import Slider from 'primevue/slider';
 
-import sineFigure from './figs/sine';
+import sineFigure from './figs/sine.ts';
 import sineCode from './figs/sine.ts?raw';
-import multipleAxesFigure from './figs/multiple-axes';
+import multipleAxesFigure from './figs/multiple-axes.ts';
 import multipleAxesCode from './figs/multiple-axes.ts?raw';
-import subplotsFigure from './figs/subplots';
+import subplotsFigure from './figs/subplots.ts';
 import subplotsCode from './figs/subplots.ts?raw';
-import irisFigure from './figs/iris';
+import irisFigure from './figs/iris.ts';
 import irisCode from './figs/iris.ts?raw';
-import cmapFigure from './figs/colormap';
+import cmapFigure from './figs/colormap.ts';
 import cmapCode from './figs/colormap.ts?raw';
-import bodeFigure from './figs/bode-rlc';
+import bodeFigure from './figs/bode-rlc.ts';
 import bodeCode from './figs/bode-rlc.ts?raw';
 
-import { useSettingsStore } from './stores/settings';
+import { useSettingsStore } from './stores/settings.ts';
 import { computed } from 'vue';
-import { useBodeRlcStore } from './stores/bode-rlc';
+import { useBodeRlcStore } from './stores/bode-rlc.ts';
 
 const settings = useSettingsStore();
 
