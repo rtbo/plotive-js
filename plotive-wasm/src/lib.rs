@@ -1,15 +1,12 @@
 use js_sys::Reflect;
-use plotive::{Prepare, des::Figure};
+use plotive::{des::Figure, Prepare};
 use std::fmt;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 mod canvas_surface;
-mod svg_surface;
-// mod js_annot;
-// mod js_axis;
-// mod js_fig;
-// mod js_series;
 mod js_style;
+mod svg_surface;
 
 #[derive(Debug)]
 struct JsErr(pub String);
@@ -46,7 +43,65 @@ macro_rules! console_log {
 #[allow(unused_imports)]
 pub(crate) use console_log;
 
+struct Params {
+    style: plotive::Style,
+    fontdb: Option<plotive::text::fontdb::Database>,
+}
 
+fn extract_fontdb(js_fontdb: &JsValue) -> Result<plotive::text::fontdb::Database, JsErr> {
+    let mut fontdb = plotive::text::bundled_font_db();
+
+    let fonts = js_fontdb
+        .dyn_ref::<js_sys::Array>()
+        .ok_or_else(|| js_err!("params.fontdb must be an array of FontBinary"))?;
+
+    for (i, js_font) in fonts.iter().enumerate() {
+        let bytes = if let Some(typed) = js_font.dyn_ref::<js_sys::Uint8Array>() {
+            typed.to_vec()
+        } else if let Some(buffer) = js_font.dyn_ref::<js_sys::ArrayBuffer>() {
+            js_sys::Uint8Array::new(buffer).to_vec()
+        } else if js_sys::ArrayBuffer::is_view(&js_font) {
+            js_sys::Uint8Array::new(&js_font).to_vec()
+        } else {
+            return Err(js_err!(
+                "params.fontdb[{}] must be Uint8Array, ArrayBuffer, or ArrayBufferView",
+                i
+            ));
+        };
+
+        use woff2_patched::decode::{is_woff2, convert_woff2_to_ttf};
+
+        let bytes = if is_woff2(&bytes) {
+            let mut bytes = bytes.as_slice();
+            convert_woff2_to_ttf(&mut bytes)
+                .map_err(|err| js_err!("Error while converting WOFF font file: {err}"))?
+        } else {
+            bytes
+        };
+
+        fontdb.load_font_data(bytes);
+    }
+
+    Ok(fontdb)
+}
+
+fn extract_params(js_params: &JsValue) -> Result<Params, JsErr> {
+    let mut style = None;
+    let mut fontdb = None;
+
+    if let Some(js_style) = get_prop_if_defined(js_params, "style") {
+        style = Some(js_style::extract_style(&js_style)?);
+    }
+
+    if let Some(js_fontdb) = get_prop_if_defined(js_params, "fontdb") {
+        fontdb = Some(extract_fontdb(&js_fontdb)?);
+    }
+
+    Ok(Params {
+        style: style.unwrap_or_default(),
+        fontdb,
+    })
+}
 
 #[wasm_bindgen]
 extern "C" {
@@ -70,7 +125,8 @@ pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, Js
     use base64::prelude::*;
     use plotive_pxl::PxlRender;
 
-    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+    let fig: Figure = serde_wasm_bindgen::from_value(fig)
+        .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
     //let fig = js_fig::extract_figure(&fig)?;
     let style = js_style::extract_style(&style)?;
     let params = plotive_pxl::Params {
@@ -86,22 +142,36 @@ pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, Js
 }
 
 #[wasm_bindgen]
-pub fn render_to_canvas(fig: JsValue, canvas: web_sys::HtmlCanvasElement, style: JsValue) -> Result<(), JsError> {
-    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
-    let style = js_style::extract_style(&style)?;
+pub fn render_to_canvas(
+    fig: JsValue,
+    canvas: web_sys::HtmlCanvasElement,
+    js_params: JsValue,
+) -> Result<(), JsError> {
+    let fig: Figure = serde_wasm_bindgen::from_value(fig)
+        .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+    let params = extract_params(&js_params)?;
     let mut surf = canvas_surface::CanvasSurface::new(canvas);
-    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
-    fig.draw(&mut surf, &style);
+    let fig = fig
+        .prepare(&(), params.fontdb.as_ref())
+        .map_err(|e| js_err!("{}", e))?;
+    fig.draw(&mut surf, &params.style);
     Ok(())
 }
 
 #[wasm_bindgen]
-pub fn render_to_svg(fig: JsValue, svg: web_sys::SvgElement, style: JsValue) -> Result<(), JsError> {
-    let fig: Figure = serde_wasm_bindgen::from_value(fig).map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
-    let style = js_style::extract_style(&style)?;
+pub fn render_to_svg(
+    fig: JsValue,
+    svg: web_sys::SvgElement,
+    js_params: JsValue,
+) -> Result<(), JsError> {
+    let fig: Figure = serde_wasm_bindgen::from_value(fig)
+        .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+    let params = extract_params(&js_params)?;
     let mut surf = svg_surface::SvgSurface::new(svg);
-    let fig = fig.prepare(&(), None).map_err(|e| js_err!("{}", e))?;
-    fig.draw(&mut surf, &style);
+    let fig = fig
+        .prepare(&(), params.fontdb.as_ref())
+        .map_err(|e| js_err!("{}", e))?;
+    fig.draw(&mut surf, &params.style);
     Ok(())
 }
 

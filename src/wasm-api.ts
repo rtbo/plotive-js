@@ -1,13 +1,12 @@
-import { Figure } from "./index.js";
-import { BuiltinStyleName, Style } from "./style.js";
+import { Figure, Params } from "./index.js";
 
 declare const __PLOTIVE_RUNTIME_TARGET__: "web" | "node";
 declare const __PLOTIVE_WASM_NODE_PATH__: string;
 
 export type WasmApi = {
-    render_to_png_data_url: (fig: Figure, style?: BuiltinStyleName | Style) => string;
-    render_to_canvas: (fig: Figure, canvas: HTMLCanvasElement, style?: BuiltinStyleName | Style) => void;
-    render_to_svg: (fig: Figure, svg: SVGElement, style?: BuiltinStyleName | Style) => void;
+    render_to_png_data_url: (fig: Figure, params?: Params) => string;
+    render_to_canvas: (fig: Figure, canvas: HTMLCanvasElement, params?: Params) => void;
+    render_to_svg: (fig: Figure, svg: SVGElement, params?: Params) => void;
     set_panic_hook: () => void;
 };
 

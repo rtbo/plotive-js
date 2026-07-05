@@ -135,41 +135,80 @@ export function figureSize(fig: Figure): [number, number] {
     }
 }
 
-export async function renderToSvgString(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
+export type FontBinary = Uint8Array | ArrayBuffer | ArrayBufferView;
+export type FontSource = FontBinary | string | URL | Blob | File;
+
+export interface Params {
+    style?: BuiltinStyleName | Style;
+    fontdb?: FontSource[];
+}
+
+async function loadFontDb(fontdb: FontSource[]): Promise<FontBinary[]> {
+    const loadedFonts: FontBinary[] = [];
+    for (const source of fontdb) {
+        if (source instanceof ArrayBuffer || ArrayBuffer.isView(source)) {
+            loadedFonts.push(source);
+        } else if (typeof source === "string" || source instanceof URL) {
+            const response = await fetch(source.toString());
+            if (!response.ok) {
+                throw new Error(`Failed to load font "${source}" from "${source}": ${response.statusText}`);
+            }
+            loadedFonts.push(await response.arrayBuffer());
+        } else if (source instanceof Blob) {
+            loadedFonts.push(await source.arrayBuffer());
+        } else {
+            throw new Error(`Unsupported font source type for "${source}"`);
+        }
+    }
+    return loadedFonts;
+}
+
+export async function renderToSvgString(fig: Figure, params?: Params): Promise<string> {
     if (typeof document === "undefined" || typeof XMLSerializer === "undefined") {
         throw new Error("renderToSvgString requires a DOM environment.");
     }
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    await renderToSvg(svg, fig, style);
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    await renderToSvg(svg, fig, params);
     return new XMLSerializer().serializeToString(svg);
 }
 
-export async function renderToPngDataUrl(fig: Figure, style?: BuiltinStyleName | Style): Promise<string> {
-    //const normalized = normalizeFig(fig);
+export async function renderToPngDataUrl(fig: Figure, params?: Params): Promise<string> {
     const wasm = await getWasmApi();
-    return wasm.render_to_png_data_url(fig, style);
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    return wasm.render_to_png_data_url(fig, params);
 }
 
-export async function renderAsSvg(elem: Element, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    const svg = await renderToSvgString(fig, style);
+export async function renderAsSvg(elem: Element, fig: Figure, params?: Params): Promise<void> {
+    const svg = await renderToSvgString(fig, params);
     elem.innerHTML = svg;
 }
 
-export async function renderToSvg(elem: SVGElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    //const normalized = normalizeFig(fig);
+export async function renderToSvg(elem: SVGElement, fig: Figure, params?: Params): Promise<void> {
     const wasm = await getWasmApi();
-    await wasm.render_to_svg(fig, elem, style);
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    await wasm.render_to_svg(fig, elem, params);
 }
 
-export async function renderToImg(elem: HTMLImageElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    const dataUrl = await renderToPngDataUrl(fig, style);
+export async function renderToImg(elem: HTMLImageElement, fig: Figure, params?: Params): Promise<void> {
+    const dataUrl = await renderToPngDataUrl(fig, params);
     elem.src = dataUrl;
 }
 
-export async function renderToCanvas(canvas: HTMLCanvasElement, fig: Figure, style?: BuiltinStyleName | Style): Promise<void> {
-    console.log("will render to canvas");
-    console.log("fig:", fig);
-    // const normalized = normalizeFig(fig);
+export async function renderToCanvas(canvas: HTMLCanvasElement, fig: Figure, params?: Params): Promise<void> {
     const wasm = await getWasmApi();
-    await wasm.render_to_canvas(fig, canvas, style);
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    await wasm.render_to_canvas(fig, canvas, params);
 }

@@ -25,24 +25,26 @@ const highlightedCode = computed(() => {
 });
 
 async function drawFigure(fig: Figure) {
-    const style = settings.theme || 'light';
+    const params = {
+        style: settings.theme || 'light',
+    };
     const renderer = settings.renderer;
 
     if (renderer === 'Canvas' && canvasEl.value) {
         try {
-            await renderToCanvas(canvasEl.value, fig, style);
+            await renderToCanvas(canvasEl.value, fig, params);
         } catch (err) {
             console.error('Error rendering to canvas:', err);
         }
     } else if (renderer === 'SVG' && svgEl.value) {
         try {
-            await renderToSvg(svgEl.value, fig, style);
+            await renderToSvg(svgEl.value, fig, params);
         } catch (err) {
             console.error('Error rendering to SVG:', err);
         }
     } else if (renderer === 'PNG' && imgEl.value) {
         try {
-            await renderToImg(imgEl.value, fig, style);
+            await renderToImg(imgEl.value, fig, params);
         } catch (err) {
             console.error('Error rendering to PNG:', err);
         }
@@ -56,7 +58,6 @@ watchEffect(() => {
     // Track all reactive dependencies touched while building the figure,
     // including slider-driven store values used by props.figureFn.
     const fig = props.figureFn();
-    console.log("drawing figure:", fig);
     void drawFigure(fig);
 });
 
@@ -70,8 +71,7 @@ watchEffect(() => {
                 <div v-if="$slots.default" class="example-controls mt-4">
                     <slot></slot>
                 </div>
-                <div class="min-h-56 p-3 text-center mt-4"
-                    aria-label="figure preview">
+                <div class="min-h-56 p-3 text-center mt-4" aria-label="figure preview">
                     <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full" />
                     <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
                     <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
