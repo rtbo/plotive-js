@@ -121,24 +121,45 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn render_to_png_data_url(fig: JsValue, style: JsValue) -> Result<String, JsError> {
+pub fn render_to_png_data_url(fig: JsValue, js_params: JsValue) -> Result<String, JsError> {
     use base64::prelude::*;
     use plotive_pxl::PxlRender;
 
     let fig: Figure = serde_wasm_bindgen::from_value(fig)
         .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
-    //let fig = js_fig::extract_figure(&fig)?;
-    let style = js_style::extract_style(&style)?;
-    let params = plotive_pxl::Params {
-        style,
+
+    let params = extract_params(&js_params)?;
+    let pxl_params = plotive_pxl::Params {
+        style: params.style,
+        fontdb: params.fontdb.as_ref(),
         ..Default::default()
     };
-    let png_data = fig.to_png_data(&(), params).map_err(|e| js_err!("{}", e))?;
+
+    let png_data = fig.to_png_data(&(), pxl_params).map_err(|e| js_err!("{}", e))?;
 
     Ok(format!(
         "data:image/png;base64,{}",
         BASE64_STANDARD.encode(&png_data)
     ))
+}
+
+#[wasm_bindgen]
+pub fn render_to_png_bytes(fig: JsValue, js_params: JsValue) -> Result<js_sys::Uint8Array, JsError> {
+    use plotive_pxl::PxlRender;
+
+    let fig: Figure = serde_wasm_bindgen::from_value(fig)
+        .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+
+    let params = extract_params(&js_params)?;
+    let pxl_params = plotive_pxl::Params {
+        style: params.style,
+        fontdb: params.fontdb.as_ref(),
+        ..Default::default()
+    };
+
+    let png_data = fig.to_png_data(&(), pxl_params).map_err(|e| js_err!("{}", e))?;
+
+    Ok(js_sys::Uint8Array::from(&png_data[..]))
 }
 
 #[wasm_bindgen]

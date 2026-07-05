@@ -13,7 +13,7 @@ const args = parseArgs({
     },
 });
 
-if (!['dev', 'prod'].includes(args.values.target)) {
+if (!['dev', 'node', 'prod'].includes(args.values.target)) {
     console.error(`Invalid target: ${args.values.target}`);
     process.exit(1);
 }
@@ -33,6 +33,18 @@ const CONFIG = {
         {
             wasmTarget: "web",
             outDir: path.resolve(distDir, 'web/wasm'),
+            dev: true,
+        },
+    ],
+    "node": [
+        {
+            wasmTarget: "web",
+            outDir: path.resolve(srcDir, 'wasm'),
+            dev: true,
+        },
+        {
+            wasmTarget: "nodejs",
+            outDir: path.resolve(distDir, 'node/wasm'),
             dev: true,
         },
     ],

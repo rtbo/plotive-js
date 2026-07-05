@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": ".",
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "custom_font.mts"]
+}

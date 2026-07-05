@@ -23,16 +23,19 @@ export interface TextProps {
     strikeout?: boolean;
 }
 
-export type Text = string | string[] | [string, Record<string, TextProps>] | {
-    fmt: string;
-    classes: Record<string, TextProps>;
+export type Text = string |
+    string[] |
+[...string[], Record<string, TextProps>] |
+{
+    fmt: string | string[];
+    props: Record<string, TextProps>;
 };
 
 export type Size = [number, number] | { width: number; height: number };
 
 export type Padding = number |
-    [number, number] | { hor: number, ver: number } |
-    [number, number, number, number] | { top: number, right: number, bottom: number, left: number };
+[number, number] | { hor: number, ver: number } |
+[number, number, number, number] | { top: number, right: number, bottom: number, left: number };
 
 export type FigLegendPos = "top" | "right" | "bottom" | "left";
 
@@ -54,6 +57,7 @@ export interface Legend<Pos> {
     pos?: Pos;
     fill?: ThemeFill;
     border?: ThemeStroke;
+    font?: TextProps;
     columns?: number;
     padding?: Padding;
     margin?: number;
@@ -183,6 +187,15 @@ export async function renderToPngDataUrl(fig: Figure, params?: Params): Promise<
         params.fontdb = loadedFonts;
     }
     return wasm.render_to_png_data_url(fig, params);
+}
+
+export async function renderToPngBytes(fig: Figure, params?: Params): Promise<Uint8Array> {
+    const wasm = await getWasmApi();
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    return wasm.render_to_png_bytes(fig, params);
 }
 
 export async function renderAsSvg(elem: Element, fig: Figure, params?: Params): Promise<void> {
