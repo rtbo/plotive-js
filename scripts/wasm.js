@@ -13,7 +13,7 @@ const args = parseArgs({
     },
 });
 
-if (!['dev', 'node', 'prod'].includes(args.values.target)) {
+if (!['web', 'node', 'prod'].includes(args.values.target)) {
     console.error(`Invalid target: ${args.values.target}`);
     process.exit(1);
 }
@@ -24,7 +24,7 @@ const srcDir = path.resolve(__dirname, '..', 'src');
 const wasmSrcDir = path.resolve(__dirname, '..', 'plotive-wasm');
 
 const CONFIG = {
-    "dev": [
+    "web": [
         {
             wasmTarget: "web",
             outDir: path.resolve(srcDir, 'wasm'),
