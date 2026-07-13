@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { renderToSvg, renderToCanvas, renderToImg } from 'plotive';
 import { useSettingsStore } from '@/stores/settings';
-import { computed, onUnmounted, ref, watchEffect } from 'vue';
+
+import { renderToSvg, renderToCanvas, renderToImg } from 'plotive';
 import type { Figure } from 'plotive';
+
 import hljs from 'highlight.js/lib/core';
 import ts from 'highlight.js/lib/languages/typescript';
+import rs from 'highlight.js/lib/languages/rust';
+import py from 'highlight.js/lib/languages/python';
 import '@/dracula.css';
 
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+
+import { computed, ref, watchEffect } from 'vue';
+
 hljs.registerLanguage('typescript', ts);
+hljs.registerLanguage('rust', rs);
+hljs.registerLanguage('python', py);
 
 const props = defineProps<{
     name: string;
-    figureCode: string;
     figureFn: () => Figure;
+    tsCode: string;
+    rsCode: string;
+    pyCode: string;
 }>();
 
 const settings = useSettingsStore();
@@ -20,8 +35,24 @@ const canvasEl = ref<HTMLCanvasElement | null>(null);
 const svgEl = ref<SVGElement | null>(null);
 const imgEl = ref<HTMLImageElement | null>(null);
 
+const langClass = computed(() => {
+    if (settings.preferredLang === 'rust') {
+        return 'language-rust';
+    } else if (settings.preferredLang === 'python') {
+        return 'language-python';
+    } else {
+        return 'language-typescript';
+    }
+});
+
 const highlightedCode = computed(() => {
-    return hljs.highlight(props.figureCode, { language: 'typescript' }).value;
+    if (settings.preferredLang === 'rust') {
+        return hljs.highlight(props.rsCode, { language: 'rust' }).value;
+    } else if (settings.preferredLang === 'python') {
+        return hljs.highlight(props.pyCode, { language: 'python' }).value;
+    } else {
+        return hljs.highlight(props.tsCode, { language: 'typescript' }).value;
+    }
 });
 
 async function drawFigure(fig: Figure) {
@@ -72,14 +103,21 @@ watchEffect(() => {
                     <slot></slot>
                 </div>
                 <div class="min-h-56 p-3 text-center mt-4" aria-label="figure preview">
-                    <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full" />
+                    <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full"></canvas>
                     <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
                     <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
                         class="mx-auto block max-w-full" />
                 </div>
             </div>
             <pre class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl self-start lg:col-start-2">
-                <code class="hljs language-typescript rounded-xl" v-html="highlightedCode"></code>
+                <Tabs v-model:value="settings.preferredLang">
+                    <TabList>
+                        <Tab value="typescript">TypeScript</Tab>
+                        <Tab value="rust">Rust</Tab>
+                        <Tab value="python">Python</Tab>
+                    </TabList>
+                </Tabs>
+                <code :class="['hljs', langClass, 'rounded-xl']" v-html="highlightedCode"></code>
             </pre>
         </div>
     </section>

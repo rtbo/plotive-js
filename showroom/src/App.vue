@@ -6,7 +6,9 @@ import Select from 'primevue/select';
 import Slider from 'primevue/slider';
 
 import sineFigure from './figs/sine.ts';
-import sineCode from './figs/sine.ts?raw';
+import sineTsCode from './figs/sine.ts?raw';
+import sineRsCode from './figs/sine.rs?raw';
+import sinePyCode from './figs/sine.py?raw';
 import multipleAxesFigure from './figs/multiple-axes.ts';
 import multipleAxesCode from './figs/multiple-axes.ts?raw';
 import subplotsFigure from './figs/subplots.ts';
@@ -98,34 +100,40 @@ function formatExponential(value: number) {
     </header>
 
     <main class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-      <Example name="Simple Figure" :figure-fn="sineFigure" :figure-code="sineCode" />
-      <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
-     <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
-       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
+      <Example name="Simple Figure" :figure-fn="sineFigure"
+          :ts-code="sineTsCode" :rs-code="sineRsCode" :py-code="sinePyCode" />
+      <!-- <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
+      <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
+      <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
       <Example name="Colormap and Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
       <Example name="Reactive Annotated Bode Plot" :figure-fn="bodeFigure" :figure-code="bodeCode">
         <div class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-4 px-2 py-2 sm:px-3">
           <label class="text-sm font-medium">R1</label>
           <Slider v-model="R1Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1) }} Ω</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1) }}
+            Ω</span>
 
           <label class="text-sm font-medium">R2</label>
           <Slider v-model="R2Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1) }} Ω</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1) }}
+            Ω</span>
 
           <label class="text-sm font-medium">R3</label>
           <Slider v-model="R3Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1) }} Ω</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1) }}
+            Ω</span>
 
           <label class="text-sm font-medium">C</label>
           <Slider v-model="CLog" :min="-7" :max="-5" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.C) }} F</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.C) }}
+            F</span>
 
           <label class="text-sm font-medium">L</label>
           <Slider v-model="LLog" :min="-5" :max="-3" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.L) }} H</span>
+          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.L) }}
+            H</span>
         </div>
-      </Example>
+      </Example> -->
     </main>
   </div>
 </template>

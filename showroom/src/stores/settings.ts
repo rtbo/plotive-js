@@ -14,6 +14,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const theme = ref<BuiltinStyleName>("light")
 
     const darkMode = ref(initialDarkMode())
+
     const setDarkMode = (value: boolean) => {
         darkMode.value = value;
         if (value) {
@@ -26,5 +27,7 @@ export const useSettingsStore = defineStore('settings', () => {
     // Ensure the root class matches the initial OS preference on first load.
     setDarkMode(darkMode.value);
 
-    return { renderer, scale, theme, darkMode, setDarkMode }
+    const preferredLang = ref('typescript')
+
+    return { renderer, scale, theme, darkMode, setDarkMode, preferredLang }
 })
