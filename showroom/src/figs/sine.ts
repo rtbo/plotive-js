@@ -5,13 +5,25 @@ export default function (): Figure {
     const y = x.map(x => Math.sin(x));
 
     return {
-        title: "Sine line series",
+        title: "Sine Wave",
         plot: {
             series: {
                 type: "line",
                 x,
                 y,
+                name: "y=sin(x)",
             },
+            xAxis: {
+                title: "x",
+                ticks: "pimultiple",
+                grid: "auto",
+            },
+            yAxis: {
+                title: "sin(x)",
+                ticks: "auto",
+                grid: "auto",
+            },
+            legend: "in-top-right",
         }
     }
 }

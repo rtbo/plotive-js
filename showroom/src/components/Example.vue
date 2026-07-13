@@ -95,38 +95,79 @@ watchEffect(() => {
 </script>
 
 <template>
-    <section class="mb-8">
-        <div class="grid items-start gap-4 lg:grid-cols-[minmax(280px,1fr)_minmax(320px,1fr)]">
-            <div class="lg:col-start-1">
-                <h2 class="text-lg">{{ props.name }}</h2>
-                <div v-if="$slots.default" class="example-controls mt-4">
-                    <slot></slot>
-                </div>
-                <div class="min-h-56 p-3 text-center mt-4" aria-label="figure preview">
-                    <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl" class="mx-auto block max-w-full"></canvas>
-                    <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
-                    <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
-                        class="mx-auto block max-w-full" />
-                </div>
+    <section class="example-layout mb-8">
+        <div class="title-and-figure-col">
+            <h2 class="text-lg">{{ props.name }}</h2>
+            <div v-if="$slots.default" class="example-controls mt-4">
+                <slot></slot>
             </div>
-            <pre class="m-0 overflow-auto p-3 text-sm leading-[1.4] rounded-xl self-start lg:col-start-2">
-                <Tabs v-model:value="settings.preferredLang">
-                    <TabList>
-                        <Tab value="typescript">TypeScript</Tab>
-                        <Tab value="rust">Rust</Tab>
-                        <Tab value="python">Python</Tab>
-                    </TabList>
-                </Tabs>
-                <code :class="['hljs', langClass, 'rounded-xl']" v-html="highlightedCode"></code>
-            </pre>
+            <div class="min-h-56 p-3 text-center mt-4" aria-label="figure preview">
+                <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl"
+                    class="mx-auto block max-w-full"></canvas>
+                <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
+                <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
+                    class="mx-auto block max-w-full" />
+            </div>
+        </div>
+        <div class="code-col">
+            <Tabs v-model:value="settings.preferredLang">
+                <TabList>
+                    <Tab value="typescript">TypeScript</Tab>
+                    <Tab value="rust">Rust</Tab>
+                    <Tab value="python">Python</Tab>
+                </TabList>
+            </Tabs>
+            <pre class="code-block text-sm"><code :class="['hljs', langClass, 'rounded-xl']" v-html="highlightedCode"></code></pre>
         </div>
     </section>
 </template>
 
 <style scoped>
+.example-layout {
+    display: flex;
+    flex-direction: column;
+}
+
 .example-controls {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.code-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 12px;
+}
+
+.code-block {
+    margin: 0;
+    min-height: 0;
+    overflow: auto;
+}
+
+@media (min-width: 1024px) {
+    .example-layout {
+        position: relative;
+        display: block;
+    }
+
+    .title-and-figure-col {
+        width: 50%;
+    }
+
+    .code-col {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50%;
+        overflow: hidden;
+    }
+
+    .code-block {
+        flex: 1;
+    }
 }
 </style>
