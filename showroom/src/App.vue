@@ -16,7 +16,10 @@ import scatterRsCode from './figs/scatter.rs?raw';
 import scatterPyCode from './figs/scatter.py?raw';
 
 import multipleAxesFigure from './figs/multiple-axes.ts';
-import multipleAxesCode from './figs/multiple-axes.ts?raw';
+import multipleAxesTsCode from './figs/multiple-axes.ts?raw';
+import multipleAxesRsCode from './figs/multiple-axes.rs?raw';
+import multipleAxesPyCode from './figs/multiple-axes.py?raw';
+
 import subplotsFigure from './figs/subplots.ts';
 import subplotsCode from './figs/subplots.ts?raw';
 import irisFigure from './figs/iris.ts';
@@ -110,6 +113,8 @@ function formatExponential(value: number) {
           :ts-code="sineTsCode" :rs-code="sineRsCode" :py-code="sinePyCode" />
       <Example name="Scatter Plot" :figure-fn="scatterFigure"
           :ts-code="scatterTsCode" :rs-code="scatterRsCode" :py-code="scatterPyCode" />
+      <Example name="Multiple Axes" :figure-fn="multipleAxesFigure"
+          :ts-code="multipleAxesTsCode" :rs-code="multipleAxesRsCode" :py-code="multipleAxesPyCode" />
       <!-- <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
       <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />

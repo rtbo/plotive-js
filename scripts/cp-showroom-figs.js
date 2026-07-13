@@ -4,6 +4,7 @@ const path = require('node:path');
 const FIG_NAMES = [
     "sine",
     "scatter",
+    "multiple-axes",
 ]
 
 const DEST_DIR = path.resolve(__dirname, '../showroom/src/figs')
@@ -17,8 +18,8 @@ for (const figName of FIG_NAMES) {
     const destPyPath = path.resolve(DEST_DIR, `${figName}.py`);
 
     // Copy the Rust and Python source files to the destination directory
-    console.log(`Copying ${srcRsPath} to ${destRsPath}`);
+    console.log(`Copying ${srcRsPath}`);
     fs.copyFileSync(srcRsPath, destRsPath);
-    console.log(`Copying ${srcPyPath} to ${destPyPath}`);
+    console.log(`Copying ${srcPyPath}`);
     fs.copyFileSync(srcPyPath, destPyPath);
 }
