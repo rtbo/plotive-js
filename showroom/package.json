@@ -16,6 +16,7 @@
     "pinia": "^3.0.4",
     "plotive": "link:..",
     "primevue": "^4.5.5",
+    "random": "^5.4.1",
     "seedrandom": "^3.0.5",
     "vue": "^3.5.32"
   },

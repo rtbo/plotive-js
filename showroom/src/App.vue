@@ -9,6 +9,12 @@ import sineFigure from './figs/sine.ts';
 import sineTsCode from './figs/sine.ts?raw';
 import sineRsCode from './figs/sine.rs?raw';
 import sinePyCode from './figs/sine.py?raw';
+
+import scatterFigure from './figs/scatter.ts';
+import scatterTsCode from './figs/scatter.ts?raw';
+import scatterRsCode from './figs/scatter.rs?raw';
+import scatterPyCode from './figs/scatter.py?raw';
+
 import multipleAxesFigure from './figs/multiple-axes.ts';
 import multipleAxesCode from './figs/multiple-axes.ts?raw';
 import subplotsFigure from './figs/subplots.ts';
@@ -100,8 +106,10 @@ function formatExponential(value: number) {
     </header>
 
     <main class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-      <Example name="Simple Figure" :figure-fn="sineFigure"
+      <Example name="Simple Line Plot" :figure-fn="sineFigure"
           :ts-code="sineTsCode" :rs-code="sineRsCode" :py-code="sinePyCode" />
+      <Example name="Scatter Plot" :figure-fn="scatterFigure"
+          :ts-code="scatterTsCode" :rs-code="scatterRsCode" :py-code="scatterPyCode" />
       <!-- <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
       <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />

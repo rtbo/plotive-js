@@ -3,6 +3,7 @@ const path = require('node:path');
 
 const FIG_NAMES = [
     "sine",
+    "scatter",
 ]
 
 const DEST_DIR = path.resolve(__dirname, '../showroom/src/figs')
