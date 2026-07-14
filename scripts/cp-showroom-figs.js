@@ -5,6 +5,8 @@ const FIG_NAMES = [
     "sine",
     "scatter",
     "multiple-axes",
+    "iris",
+    "subplots",
 ]
 
 const DEST_DIR = path.resolve(__dirname, '../showroom/src/figs')

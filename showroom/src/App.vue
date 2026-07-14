@@ -20,10 +20,16 @@ import multipleAxesTsCode from './figs/multiple-axes.ts?raw';
 import multipleAxesRsCode from './figs/multiple-axes.rs?raw';
 import multipleAxesPyCode from './figs/multiple-axes.py?raw';
 
-import subplotsFigure from './figs/subplots.ts';
-import subplotsCode from './figs/subplots.ts?raw';
 import irisFigure from './figs/iris.ts';
-import irisCode from './figs/iris.ts?raw';
+import irisTsCode from './figs/iris.ts?raw';
+import irisRsCode from './figs/iris.rs?raw';
+import irisPyCode from './figs/iris.py?raw';
+
+import subplotsFigure from './figs/subplots.ts';
+import subplotsTsCode from './figs/subplots.ts?raw';
+import subplotsRsCode from './figs/subplots.rs?raw';
+import subplotsPyCode from './figs/subplots.py?raw';
+
 import cmapFigure from './figs/colormap.ts';
 import cmapCode from './figs/colormap.ts?raw';
 import bodeFigure from './figs/bode-rlc.ts';
@@ -115,6 +121,10 @@ function formatExponential(value: number) {
           :ts-code="scatterTsCode" :rs-code="scatterRsCode" :py-code="scatterPyCode" />
       <Example name="Multiple Axes" :figure-fn="multipleAxesFigure"
           :ts-code="multipleAxesTsCode" :rs-code="multipleAxesRsCode" :py-code="multipleAxesPyCode" />
+      <Example name="Iris DataSet" :figure-fn="irisFigure"
+          :ts-code="irisTsCode" :rs-code="irisRsCode" :py-code="irisPyCode" />
+      <Example name="Subplots with shared axis" :figure-fn="subplotsFigure"
+          :ts-code="subplotsTsCode" :rs-code="subplotsRsCode" :py-code="subplotsPyCode" />
       <!-- <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
       <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
       <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
