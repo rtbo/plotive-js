@@ -1,6 +1,12 @@
 import { ThemeColor, ThemeFill, ThemeMarker, ThemeStroke, Pattern } from "./style";
 
 export type ZPos = "below-series" | "above-series";
+export type CoordSys = "data" | "plot";
+/// Coordinate can be a number (in data coordinates) or a tuple of [number, CoordSys] where the number is in the specified coordinate system.
+/// If the coordinate system is not specified, it defaults to "data" coordinates.
+/// In plot coordinates, the number is in points relative to the top-left corner of the plot area.
+/// Negative numbers are allowed and will be interpreted as offsets from the right or bottom edges of the plot area.
+export type Coord = number | [number, CoordSys];
 
 interface AnnotBase {
     xAxis?: string;
@@ -16,35 +22,35 @@ type LineBase = AnnotBase & {
 
 type Line = LineBase & (
     {
-        horizontal: number;
+        horizontal: Coord;
         vertical?: never;
         slope?: never;
         twoPoints?: never;
     } |
     {
         horizontal?: never;
-        vertical: number;
+        vertical: Coord;
         slope?: never;
         twoPoints?: never;
     } |
     {
         horizontal?: never;
         vertical?: never;
-        slope: [[number, number], number];
+        slope: [[Coord, Coord], number];
         twoPoints?: never;
     } |
     {
         horizontal?: never;
         vertical?: never;
         slope?: never;
-        twoPoints: [[number, number], [number, number]];
+        twoPoints: [[Coord, Coord], [Coord, Coord]];
     }
 );
 
 type Arrow = AnnotBase & {
     type: "arrow";
-    xy: [number, number];
-    dxy: [number, number];
+    xy: [Coord, Coord];
+    dxy: [Coord, Coord];
     stroke?: ThemeStroke,
     headSize?: number;
     xAxis?: string;
@@ -53,7 +59,7 @@ type Arrow = AnnotBase & {
 }
 
 type Marker = AnnotBase &  {
-    xy: [number, number];
+    xy: [Coord, Coord];
     marker?: ThemeMarker;
 }
 
@@ -70,7 +76,7 @@ type Anchor =
 
 type Label = AnnotBase & {
     type: "label";
-    xy: [number, number];
+    xy: [Coord, Coord];
     text: string;
     anchor?: Anchor;
     frame?: [ThemeFill | null, ThemeStroke | null];
