@@ -1,10 +1,13 @@
-import type { Figure } from 'plotive'
+import type { Figure } from "plotive";
 
 export default function (): Figure {
-    const x1 = Array.from({ length: 500 }, (_, i) => i / 499 * 2 * Math.PI);
-    const x2 = Array.from({ length: 500 }, (_, i) => i / 499 * 2 * Math.PI + 0.5 * Math.PI);
-    const y1 = x1.map(x => Math.sin(x * x));
-    const y2 = x1.map(x => -Math.sin(x * x));
+    const x1 = Array.from({ length: 500 }, (_, i) => (i / 499) * 2 * Math.PI);
+    const x2 = Array.from(
+        { length: 500 },
+        (_, i) => (i / 499) * 2 * Math.PI + 0.5 * Math.PI,
+    );
+    const y1 = x1.map((x) => Math.sin(x * x));
+    const y2 = x1.map((x) => -Math.sin(x * x));
 
     return {
         size: {
@@ -25,7 +28,7 @@ export default function (): Figure {
                     },
                     ticks: "auto",
                     grid: "auto",
-                }
+                },
             },
             {
                 series: {
@@ -38,7 +41,7 @@ export default function (): Figure {
                     ticks: "pimultiple",
                     grid: "auto",
                 },
-            }
+            },
         ],
-    }
+    };
 }

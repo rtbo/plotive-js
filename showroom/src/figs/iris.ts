@@ -38,5 +38,5 @@ export default function (): Figure {
                 grid: "auto",
             },
         },
-    }
+    };
 }

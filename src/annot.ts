@@ -1,4 +1,10 @@
-import { ThemeColor, ThemeFill, ThemeMarker, ThemeStroke, Pattern } from "./style";
+import {
+    ThemeColor,
+    ThemeFill,
+    ThemeMarker,
+    ThemeStroke,
+    Pattern,
+} from "./style";
 
 export type ZPos = "below-series" | "above-series";
 export type CoordSys = "data" | "plot";
@@ -18,61 +24,62 @@ type LineBase = AnnotBase & {
     type: "line";
     stroke?: ThemeStroke;
     pattern?: Pattern;
-}
+};
 
-type Line = LineBase & (
-    {
-        horizontal: Coord;
-        vertical?: never;
-        slope?: never;
-        twoPoints?: never;
-    } |
-    {
-        horizontal?: never;
-        vertical: Coord;
-        slope?: never;
-        twoPoints?: never;
-    } |
-    {
-        horizontal?: never;
-        vertical?: never;
-        slope: [[Coord, Coord], number];
-        twoPoints?: never;
-    } |
-    {
-        horizontal?: never;
-        vertical?: never;
-        slope?: never;
-        twoPoints: [[Coord, Coord], [Coord, Coord]];
-    }
-);
+type Line = LineBase &
+    (
+        | {
+              horizontal: Coord;
+              vertical?: never;
+              slope?: never;
+              twoPoints?: never;
+          }
+        | {
+              horizontal?: never;
+              vertical: Coord;
+              slope?: never;
+              twoPoints?: never;
+          }
+        | {
+              horizontal?: never;
+              vertical?: never;
+              slope: [[Coord, Coord], number];
+              twoPoints?: never;
+          }
+        | {
+              horizontal?: never;
+              vertical?: never;
+              slope?: never;
+              twoPoints: [[Coord, Coord], [Coord, Coord]];
+          }
+    );
 
 type Arrow = AnnotBase & {
     type: "arrow";
     xy: [Coord, Coord];
     dxy: [Coord, Coord];
-    stroke?: ThemeStroke,
+    stroke?: ThemeStroke;
     headSize?: number;
     xAxis?: string;
     yAxis?: string;
     zpos?: ZPos;
-}
+};
 
-type Marker = AnnotBase &  {
+type Marker = AnnotBase & {
     xy: [Coord, Coord];
     marker?: ThemeMarker;
-}
+};
 
 type Anchor =
-    "top-left" |
-    "top-center" |
-    "top-right" |
-    "center-left" |
-    "center" |
-    "center-right" |
-    "bottom-left" |
-    "bottom-center" |
-    "bottom-right";
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "center-left"
+    | "center"
+    | "center-right"
+    | "bottom-left"
+    | "bottom-center"
+    | "bottom-right";
 
 type Label = AnnotBase & {
     type: "label";
@@ -85,6 +92,6 @@ type Label = AnnotBase & {
     xAxis?: string;
     yAxis?: string;
     zpos?: ZPos;
-}
+};
 
 export type Annotation = Line | Arrow | Marker | Label;

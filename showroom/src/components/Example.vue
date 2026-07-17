@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { useSettingsStore } from '@/stores/settings';
+import { useSettingsStore } from "@/stores/settings";
 
-import { renderToSvg, renderToCanvas, renderToImg } from 'plotive';
-import type { Figure } from 'plotive';
+import { renderToSvg, renderToCanvas, renderToImg } from "plotive";
+import type { Figure } from "plotive";
 
-import hljs from 'highlight.js/lib/core';
-import ts from 'highlight.js/lib/languages/typescript';
-import rs from 'highlight.js/lib/languages/rust';
-import py from 'highlight.js/lib/languages/python';
-import '@/dracula.css';
+import hljs from "highlight.js/lib/core";
+import ts from "highlight.js/lib/languages/typescript";
+import rs from "highlight.js/lib/languages/rust";
+import py from "highlight.js/lib/languages/python";
+import "@/dracula.css";
 
-import Tabs from 'primevue/tabs';
-import TabList from 'primevue/tablist';
-import Tab from 'primevue/tab';
-import TabPanels from 'primevue/tabpanels';
-import TabPanel from 'primevue/tabpanel';
+import Tabs from "primevue/tabs";
+import TabList from "primevue/tablist";
+import Tab from "primevue/tab";
+import TabPanels from "primevue/tabpanels";
+import TabPanel from "primevue/tabpanel";
 
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from "vue";
 
-hljs.registerLanguage('typescript', ts);
-hljs.registerLanguage('rust', rs);
-hljs.registerLanguage('python', py);
+hljs.registerLanguage("typescript", ts);
+hljs.registerLanguage("rust", rs);
+hljs.registerLanguage("python", py);
 
 const props = defineProps<{
     name: string;
@@ -36,51 +36,51 @@ const svgEl = ref<SVGElement | null>(null);
 const imgEl = ref<HTMLImageElement | null>(null);
 
 const langClass = computed(() => {
-    if (settings.preferredLang === 'rust') {
-        return 'language-rust';
-    } else if (settings.preferredLang === 'python') {
-        return 'language-python';
+    if (settings.preferredLang === "rust") {
+        return "language-rust";
+    } else if (settings.preferredLang === "python") {
+        return "language-python";
     } else {
-        return 'language-typescript';
+        return "language-typescript";
     }
 });
 
 const highlightedCode = computed(() => {
-    if (settings.preferredLang === 'rust') {
-        return hljs.highlight(props.rsCode, { language: 'rust' }).value;
-    } else if (settings.preferredLang === 'python') {
-        return hljs.highlight(props.pyCode, { language: 'python' }).value;
+    if (settings.preferredLang === "rust") {
+        return hljs.highlight(props.rsCode, { language: "rust" }).value;
+    } else if (settings.preferredLang === "python") {
+        return hljs.highlight(props.pyCode, { language: "python" }).value;
     } else {
-        return hljs.highlight(props.tsCode, { language: 'typescript' }).value;
+        return hljs.highlight(props.tsCode, { language: "typescript" }).value;
     }
 });
 
 async function drawFigure(fig: Figure) {
     const params = {
-        style: settings.theme || 'light',
+        style: settings.theme || "light",
     };
     const renderer = settings.renderer;
 
-    if (renderer === 'Canvas' && canvasEl.value) {
+    if (renderer === "Canvas" && canvasEl.value) {
         try {
             await renderToCanvas(canvasEl.value, fig, params);
         } catch (err) {
-            console.error('Error rendering to canvas:', err);
+            console.error("Error rendering to canvas:", err);
         }
-    } else if (renderer === 'SVG' && svgEl.value) {
+    } else if (renderer === "SVG" && svgEl.value) {
         try {
             await renderToSvg(svgEl.value, fig, params);
         } catch (err) {
-            console.error('Error rendering to SVG:', err);
+            console.error("Error rendering to SVG:", err);
         }
-    } else if (renderer === 'PNG' && imgEl.value) {
+    } else if (renderer === "PNG" && imgEl.value) {
         try {
             await renderToImg(imgEl.value, fig, params);
         } catch (err) {
-            console.error('Error rendering to PNG:', err);
+            console.error("Error rendering to PNG:", err);
         }
     } else {
-        console.warn('No valid renderer or container found');
+        console.warn("No valid renderer or container found");
         return;
     }
 }
@@ -91,7 +91,6 @@ watchEffect(() => {
     const fig = props.figureFn();
     void drawFigure(fig);
 });
-
 </script>
 
 <template>
@@ -101,12 +100,26 @@ watchEffect(() => {
             <div v-if="$slots.default" class="example-controls mt-4">
                 <slot></slot>
             </div>
-            <div class="min-h-56 p-3 text-center mt-4" aria-label="figure preview">
-                <canvas v-show="settings.renderer === 'Canvas'" ref="canvasEl"
-                    class="mx-auto block max-w-full"></canvas>
-                <svg v-show="settings.renderer === 'SVG'" ref="svgEl" class="mx-auto block max-w-full"></svg>
-                <img v-show="settings.renderer === 'PNG'" ref="imgEl" alt="figure render"
-                    class="mx-auto block max-w-full" />
+            <div
+                class="min-h-56 p-3 text-center mt-4"
+                aria-label="figure preview"
+            >
+                <canvas
+                    v-show="settings.renderer === 'Canvas'"
+                    ref="canvasEl"
+                    class="mx-auto block max-w-full"
+                ></canvas>
+                <svg
+                    v-show="settings.renderer === 'SVG'"
+                    ref="svgEl"
+                    class="mx-auto block max-w-full"
+                ></svg>
+                <img
+                    v-show="settings.renderer === 'PNG'"
+                    ref="imgEl"
+                    alt="figure render"
+                    class="mx-auto block max-w-full"
+                />
             </div>
         </div>
         <div class="code-col">
@@ -117,7 +130,9 @@ watchEffect(() => {
                     <Tab value="python">Python</Tab>
                 </TabList>
             </Tabs>
-            <pre class="code-block text-sm"><code :class="['hljs', langClass, 'rounded-xl']" v-html="highlightedCode"></code></pre>
+            <pre
+                class="code-block text-sm"
+            ><code :class="['hljs', langClass, 'rounded-xl']" v-html="highlightedCode"></code></pre>
         </div>
     </section>
 </template>

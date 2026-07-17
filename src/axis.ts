@@ -30,7 +30,12 @@ export interface SharedScale {
 
 export type ScaleType = "auto" | "lin" | "log";
 
-export type Scale = [Bound | null, Bound | null] | AutoScale | LinScale | LogScale | SharedScale;
+export type Scale =
+    | [Bound | null, Bound | null]
+    | AutoScale
+    | LinScale
+    | LogScale
+    | SharedScale;
 
 export interface AutoTicksLocator {
     type: "auto";
@@ -52,25 +57,59 @@ export interface LogTicksLocator {
     base?: number;
 }
 
-export type DateTimeUnit = "year" | "years" | "month" | "months" | "day" | "days" |
-        "hour" | "hours" | "min" | "mins" | "sec" | "secs" | "milli" | "millis" | "micro" | "micros";
+export type DateTimeUnit =
+    | "year"
+    | "years"
+    | "month"
+    | "months"
+    | "day"
+    | "days"
+    | "hour"
+    | "hours"
+    | "min"
+    | "mins"
+    | "sec"
+    | "secs"
+    | "milli"
+    | "millis"
+    | "micro"
+    | "micros";
 
 export interface DateTimeTicksLocator {
     type: "datetime";
     period?: [number, DateTimeUnit];
 }
 
-export type TimeDeltaUnit = "day" | "days" | "hour" | "hours" | "min" | "mins" | "sec" | "secs" | "milli" | "millis" | "micro" | "micros";
+export type TimeDeltaUnit =
+    | "day"
+    | "days"
+    | "hour"
+    | "hours"
+    | "min"
+    | "mins"
+    | "sec"
+    | "secs"
+    | "milli"
+    | "millis"
+    | "micro"
+    | "micros";
 
 export interface TimeDeltaTicksLocator {
     type: "timedelta";
     period?: [number, TimeDeltaUnit];
 }
 
-export type TicksLocatorType = "auto" | "maxn" | "pimultiple" | "log" | "datetime" | "timedelta";
+export type TicksLocatorType =
+    "auto" | "maxn" | "pimultiple" | "log" | "datetime" | "timedelta";
 
-export type TicksLocator = number[] | AutoTicksLocator | MaxNTicksLocator | PiMultipleTicksLocator | LogTicksLocator | DateTimeTicksLocator | TimeDeltaTicksLocator;
-
+export type TicksLocator =
+    | number[]
+    | AutoTicksLocator
+    | MaxNTicksLocator
+    | PiMultipleTicksLocator
+    | LogTicksLocator
+    | DateTimeTicksLocator
+    | TimeDeltaTicksLocator;
 
 export interface AutoTicksFormatter {
     type: "auto";
@@ -100,15 +139,16 @@ export interface TimeDeltaTicksFormatter {
     fmt?: string;
 }
 
-export type TicksFormatterType = "auto" | "shared-auto" | "decimal" | "percent" | "datetime" | "timedelta";
+export type TicksFormatterType =
+    "auto" | "shared-auto" | "decimal" | "percent" | "datetime" | "timedelta";
 
 export type TicksFormatter =
-    AutoTicksFormatter |
-    SharedAutoTicksFormatter |
-    DecimalTicksFormatter |
-    PercentTicksFormatter |
-    DateTimeTicksFormatter |
-    TimeDeltaTicksFormatter;
+    | AutoTicksFormatter
+    | SharedAutoTicksFormatter
+    | DecimalTicksFormatter
+    | PercentTicksFormatter
+    | DateTimeTicksFormatter
+    | TimeDeltaTicksFormatter;
 
 export interface Ticks {
     locator?: TicksLocator;

@@ -1,12 +1,12 @@
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require("node:fs");
+const path = require("node:path");
 
 const DIRS_TO_CLEAN = [
-    path.resolve(__dirname, '../dist'),
-    path.resolve(__dirname, '../dist-dev'),
-    path.resolve(__dirname, '../src/wasm'),
-    path.resolve(__dirname, '../showroom/dist'),
-    path.resolve(__dirname, '../showroom/node_modules/.vite'),
+    path.resolve(__dirname, "../dist"),
+    path.resolve(__dirname, "../dist-dev"),
+    path.resolve(__dirname, "../src/wasm"),
+    path.resolve(__dirname, "../showroom/dist"),
+    path.resolve(__dirname, "../showroom/node_modules/.vite"),
 ];
 
 for (const dir of DIRS_TO_CLEAN) {

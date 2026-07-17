@@ -1,5 +1,5 @@
-import type { Figure } from 'plotive'
-import random from 'random'
+import type { Figure } from "plotive";
+import random from "random";
 
 export default function (): Figure {
     const normalX1 = random.normal(30, 5);
@@ -45,6 +45,6 @@ export default function (): Figure {
                 grid: "auto",
             },
             legend: "in-bottom-left",
-        }
-    }
+        },
+    };
 }

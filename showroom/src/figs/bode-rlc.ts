@@ -6,14 +6,14 @@ import { useBodeRlcStore } from "@/stores/bode-rlc";
 export default function (): Figure {
     const { R, L, C } = useBodeRlcStore();
 
-    const freq = logSpace(100, 1E6, 500);
+    const freq = logSpace(100, 1e6, 500);
 
     const cutoff = lcCutOffFreq(L, C);
 
     const magSeries: Series[] = [];
     const phaseSeries: Series[] = [];
 
-    R.forEach(r => {
+    R.forEach((r) => {
         const mag = [];
         const phase = [];
         for (let f of freq) {
@@ -21,7 +21,12 @@ export default function (): Figure {
             mag.push(response.magnitude);
             phase.push(response.phase);
         }
-        magSeries.push({ name: `R = ${humanize(r)}Ω`, type: "line", x: freq, y: mag });
+        magSeries.push({
+            name: `R = ${humanize(r)}Ω`,
+            type: "line",
+            x: freq,
+            y: mag,
+        });
         phaseSeries.push({ type: "line", x: freq, y: phase });
     });
 
@@ -76,8 +81,8 @@ export default function (): Figure {
                         xy: [cutoff * 10, -40],
                         text: `-40 dB/decade`,
                         anchor: "bottom-left",
-                    }
-                ]
+                    },
+                ],
             },
             {
                 series: phaseSeries,
@@ -92,8 +97,8 @@ export default function (): Figure {
                     title: "Phase (rad)",
                     ticks: "pimultiple",
                     grid: "auto",
-                }
-            }
+                },
+            },
         ],
-    }
+    };
 }

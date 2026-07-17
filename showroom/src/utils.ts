@@ -3,7 +3,9 @@ export function logSpace(min: number, max: number, num: number): number[] {
     const logMax = Math.log10(max);
     const step = (logMax - logMin) / (num - 1);
 
-    return Array.from({length: num}, (_, i) => Math.pow(10, logMin + i * step));
+    return Array.from({ length: num }, (_, i) =>
+        Math.pow(10, logMin + i * step),
+    );
 }
 
 export function humanize(num: number, precision: number = 2): string {

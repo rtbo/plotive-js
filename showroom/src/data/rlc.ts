@@ -1,5 +1,9 @@
-
-export function rlcFreqResponse(R: number, L: number, C: number, f: number): { magnitude: number; phase: number } {
+export function rlcFreqResponse(
+    R: number,
+    L: number,
+    C: number,
+    f: number,
+): { magnitude: number; phase: number } {
     const pulse = 2 * Math.PI * f;
 
     // H(jw) = 1 / (1 - w^2LC + jwRC)

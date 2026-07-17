@@ -1,62 +1,62 @@
 {
-  "name": "plotive",
-  "version": "0.3.0",
-  "keywords": [
-    "plotting",
-    "visualization",
-    "charts",
-    "graphs"
-  ],
-  "author": "Rémi Thebault",
-  "description": "A library for plotting data.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rtbo/plotive-js.git"
-  },
-  "scripts": {
-    "clean": "node scripts/clean.js",
-    "build:wasm:web": "node scripts/wasm.js --target web",
-    "build:wasm:node": "node scripts/wasm.js --target node",
-    "build:wasm:prod": "node scripts/wasm.js --target prod",
-    "build:ts:web": "vite -c vite.lib.config.ts build --mode web",
-    "build:ts:node-cjs": "vite -c vite.lib.config.ts build --mode node-cjs",
-    "build:ts:node-esm": "vite -c vite.lib.config.ts build --mode node-esm",
-    "build:ts:types": "tsc -p tsconfig.build.json",
-    "build:ts:all": "pnpm run build:ts:web && pnpm run build:ts:node-cjs && pnpm run build:ts:node-esm && pnpm run build:ts:types",
-    "build:web": "pnpm run clean && pnpm run build:wasm:web && pnpm run build:ts:web && pnpm run build:ts:types",
-    "build:node": "pnpm run clean && pnpm run build:wasm:node && pnpm run build:ts:node-esm && pnpm run build:ts:types",
-    "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
-    "prepublishOnly": "pnpm run build",
-    "pack:check": "pnpm run build && npm pack --dry-run",
-    "showroom:install": "pnpm --dir showroom install",
-    "showroom:dev": "pnpm run build:web && pnpm run showroom:install && pnpm --dir showroom run dev",
-    "showroom:devProd": "pnpm run build:prod && pnpm run showroom:install && pnpm --dir showroom run dev",
-    "examples:custom-font": "pnpm run build:node && node examples/custom_font.mts"
-  },
-  "main": "./dist/node/cjs/index.cjs",
-  "module": "./dist/web/index.mjs",
-  "types": "./dist/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "node": {
-        "import": "./dist/node/esm/index.mjs",
-        "require": "./dist/node/cjs/index.cjs"
-      },
-      "browser": "./dist/web/index.mjs",
-      "import": "./dist/web/index.mjs",
-      "require": "./dist/node/cjs/index.cjs",
-      "default": "./dist/web/index.mjs"
+    "name": "plotive",
+    "version": "0.3.0",
+    "keywords": [
+        "plotting",
+        "visualization",
+        "charts",
+        "graphs"
+    ],
+    "author": "Rémi Thebault",
+    "description": "A library for plotting data.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rtbo/plotive-js.git"
+    },
+    "scripts": {
+        "clean": "node scripts/clean.js",
+        "build:wasm:web": "node scripts/wasm.js --target web",
+        "build:wasm:node": "node scripts/wasm.js --target node",
+        "build:wasm:prod": "node scripts/wasm.js --target prod",
+        "build:ts:web": "vite -c vite.lib.config.ts build --mode web",
+        "build:ts:node-cjs": "vite -c vite.lib.config.ts build --mode node-cjs",
+        "build:ts:node-esm": "vite -c vite.lib.config.ts build --mode node-esm",
+        "build:ts:types": "tsc -p tsconfig.build.json",
+        "build:ts:all": "pnpm run build:ts:web && pnpm run build:ts:node-cjs && pnpm run build:ts:node-esm && pnpm run build:ts:types",
+        "build:web": "pnpm run clean && pnpm run build:wasm:web && pnpm run build:ts:web && pnpm run build:ts:types",
+        "build:node": "pnpm run clean && pnpm run build:wasm:node && pnpm run build:ts:node-esm && pnpm run build:ts:types",
+        "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
+        "prepublishOnly": "pnpm run build",
+        "pack:check": "pnpm run build && npm pack --dry-run",
+        "showroom:install": "pnpm --dir showroom install",
+        "showroom:dev": "pnpm run build:web && pnpm run showroom:install && pnpm --dir showroom run dev",
+        "showroom:devProd": "pnpm run build:prod && pnpm run showroom:install && pnpm --dir showroom run dev",
+        "examples:custom-font": "pnpm run build:node && node examples/custom_font.mts"
+    },
+    "main": "./dist/node/cjs/index.cjs",
+    "module": "./dist/web/index.mjs",
+    "types": "./dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "node": {
+                "import": "./dist/node/esm/index.mjs",
+                "require": "./dist/node/cjs/index.cjs"
+            },
+            "browser": "./dist/web/index.mjs",
+            "import": "./dist/web/index.mjs",
+            "require": "./dist/node/cjs/index.cjs",
+            "default": "./dist/web/index.mjs"
+        }
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "devDependencies": {
+        "@types/node": "^25.9.4",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1"
     }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "devDependencies": {
-    "@types/node": "^25.9.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
-  }
 }
