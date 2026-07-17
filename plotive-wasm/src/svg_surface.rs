@@ -208,6 +208,16 @@ impl SvgSurface {
                     set_attr(node, "stroke-dasharray", dasharray);
                 }
             }
+            match stroke.cap {
+                render::LineCap::Butt => set_attr(node, "stroke-linecap", "butt"),
+                render::LineCap::Round => set_attr(node, "stroke-linecap", "round"),
+                render::LineCap::Square => set_attr(node, "stroke-linecap", "square"),
+            }
+            match stroke.join {
+                render::LineJoin::Miter => set_attr(node, "stroke-linejoin", "miter"),
+                render::LineJoin::Round => set_attr(node, "stroke-linejoin", "round"),
+                render::LineJoin::Bevel => set_attr(node, "stroke-linejoin", "bevel"),
+            }
         } else {
             set_attr(node, "stroke", "none");
         }

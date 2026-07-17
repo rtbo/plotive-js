@@ -66,6 +66,16 @@ impl CanvasSurface {
                 self.ctx.set_line_dash(&dash_array).unwrap();
             }
         }
+        match stroke.cap {
+            render::LineCap::Butt => self.ctx.set_line_cap("butt"),
+            render::LineCap::Round => self.ctx.set_line_cap("round"),
+            render::LineCap::Square => self.ctx.set_line_cap("square"),
+        }
+        match stroke.join {
+            render::LineJoin::Miter => self.ctx.set_line_join("miter"),
+            render::LineJoin::Round => self.ctx.set_line_join("round"),
+            render::LineJoin::Bevel => self.ctx.set_line_join("bevel"),
+        }
     }
 }
 
