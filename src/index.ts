@@ -11,7 +11,7 @@ import { Axis, TicksLocator } from "./axis";
 import { getWasmApi } from "./wasm-api";
 
 export { BUILTIN_STYLES } from "./style";
-export type { LerpMethod, ColorMap, BuiltinCmap } from "./cmap";
+export type { LerpMethod, ColorMap, BuiltinLerpCmap, LiteralColorMap, CatColorMap } from "./cmap";
 export type { Series } from "./series";
 export type { BuiltinStyleName, Style, Theme, Palette } from "./style";
 
