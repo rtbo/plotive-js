@@ -2,6 +2,8 @@
 
 A JavaScript library for creating charts and data visualizations. Plotive is a set of JavaScript bindings for the [plotive](https://github.com/rtbo/plotive) project written in Rust.
 
+You may also be interested in the [Python bindings](https://pypi.org/project/plotive/).
+
 ## Features
 
 - 📊 Create charts and data visualizations
@@ -21,6 +23,8 @@ or with pnpm:
 ```bash
 pnpm add plotive
 ```
+
+## Example
 
 ## Usage
 
