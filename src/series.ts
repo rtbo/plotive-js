@@ -9,7 +9,7 @@ import {
 } from "./style";
 
 export type DataCol =
-    string | Float32Array | Float64Array | number[] | string[];
+    string | number[] | string[];
 
 interface SeriesBase {
     name?: string;

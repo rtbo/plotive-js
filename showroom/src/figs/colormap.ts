@@ -1,4 +1,4 @@
-import type { Figure } from "plotive";
+import type { Figure, Axis } from "plotive";
 import seedrandom from "seedrandom/lib/alea.js";
 
 export default function (): Figure {
@@ -13,6 +13,12 @@ export default function (): Figure {
         (_, i) => (i * 10) / (NUM - 1) + 10,
     );
 
+    const axis: Axis = {
+        scale: [-0.3, 10.3],
+        ticks: "auto",
+        grid: "auto",
+    };
+
     return {
         plot: {
             series: {
@@ -26,14 +32,8 @@ export default function (): Figure {
                 // colormap scales autoamatically to the range of
                 // the colors array, but can be customized
             },
-            xAxis: {
-                ticks: "auto",
-                grid: "auto",
-            },
-            yAxis: {
-                ticks: "auto",
-                grid: "auto",
-            },
+            xAxis: axis,
+            yAxis: axis,
             colorbar: "auto",
         },
     };

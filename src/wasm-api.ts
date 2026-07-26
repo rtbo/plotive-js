@@ -1,4 +1,4 @@
-import { Figure, Params } from "./index.js";
+import { Figure, Params, DataCol } from "./index.js";
 
 declare const __PLOTIVE_RUNTIME_TARGET__: "web" | "node";
 declare const __PLOTIVE_WASM_NODE_PATH__: string;
@@ -12,6 +12,7 @@ export type WasmApi = {
         params?: Params,
     ) => void;
     render_to_svg: (fig: Figure, svg: SVGElement, params?: Params) => void;
+    parse_csv: (csv: string) => Record<string, DataCol>;
     set_panic_hook: () => void;
 };
 

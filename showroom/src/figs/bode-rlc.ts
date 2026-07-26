@@ -63,7 +63,7 @@ export default function (): Figure {
                     },
                     {
                         type: "label",
-                        xy: [cutoff, -60],
+                        xy: [cutoff, [-10, "plot"]], // 10 point from the bottom
                         text: `${(cutoff / 1000).toFixed(2)} kHz`,
                         anchor: "bottom-left",
                         angle: 90,

@@ -2,7 +2,7 @@
 import { useSettingsStore } from "@/stores/settings";
 
 import { renderToSvg, renderToCanvas, renderToImg } from "plotive";
-import type { Figure } from "plotive";
+import type { Figure, Params } from "plotive";
 
 import hljs from "highlight.js/lib/core";
 import ts from "highlight.js/lib/languages/typescript";
@@ -13,8 +13,6 @@ import "@/dracula.css";
 import Tabs from "primevue/tabs";
 import TabList from "primevue/tablist";
 import Tab from "primevue/tab";
-import TabPanels from "primevue/tabpanels";
-import TabPanel from "primevue/tabpanel";
 
 import { computed, ref, watchEffect } from "vue";
 
@@ -24,7 +22,7 @@ hljs.registerLanguage("python", py);
 
 const props = defineProps<{
     name: string;
-    figureFn: () => Figure;
+    figureFn: () => Figure | Promise<Figure>;
     tsCode: string;
     rsCode: string;
     pyCode: string;
@@ -55,11 +53,14 @@ const highlightedCode = computed(() => {
     }
 });
 
-async function drawFigure(fig: Figure) {
+async function drawFigure(
+    fig: Figure,
+    renderer: string,
+    theme: Params["style"],
+) {
     const params = {
-        style: settings.theme || "light",
+        style: theme,
     };
-    const renderer = settings.renderer;
 
     if (renderer === "Canvas" && canvasEl.value) {
         try {
@@ -85,11 +86,31 @@ async function drawFigure(fig: Figure) {
     }
 }
 
-watchEffect(() => {
-    // Track all reactive dependencies touched while building the figure,
-    // including slider-driven store values used by props.figureFn.
-    const fig = props.figureFn();
-    void drawFigure(fig);
+watchEffect((onCleanup) => {
+    // Track reactive dependencies touched during the synchronous part of
+    // figureFn, then support both sync and async figure builders.
+    let canceled = false;
+    onCleanup(() => {
+        canceled = true;
+    });
+
+    // Read renderer/theme synchronously so watchEffect tracks them.
+    const renderer = settings.renderer;
+    const theme = settings.theme || "light";
+
+    const figPromise = Promise.resolve(props.figureFn());
+
+    void figPromise
+        .then((fig) => {
+            if (!canceled) {
+                return drawFigure(fig, renderer, theme);
+            }
+        })
+        .catch((err) => {
+            if (!canceled) {
+                console.error("Error building figure:", err);
+            }
+        });
 });
 </script>
 

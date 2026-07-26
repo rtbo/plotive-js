@@ -1,4 +1,5 @@
 use js_sys::Reflect;
+use plotive::data::Source;
 use plotive::{des::Figure, Prepare};
 use std::fmt;
 use wasm_bindgen::prelude::*;
@@ -69,7 +70,7 @@ fn extract_fontdb(js_fontdb: &JsValue) -> Result<plotive::text::fontdb::Database
             ));
         };
 
-        use woff2_patched::decode::{is_woff2, convert_woff2_to_ttf};
+        use woff2_patched::decode::{convert_woff2_to_ttf, is_woff2};
 
         let bytes = if is_woff2(&bytes) {
             let mut bytes = bytes.as_slice();
@@ -135,7 +136,9 @@ pub fn render_to_png_data_url(fig: JsValue, js_params: JsValue) -> Result<String
         ..Default::default()
     };
 
-    let png_data = fig.to_png_data(&(), pxl_params).map_err(|e| js_err!("{}", e))?;
+    let png_data = fig
+        .to_png_data(&(), pxl_params)
+        .map_err(|e| js_err!("{}", e))?;
 
     Ok(format!(
         "data:image/png;base64,{}",
@@ -144,7 +147,10 @@ pub fn render_to_png_data_url(fig: JsValue, js_params: JsValue) -> Result<String
 }
 
 #[wasm_bindgen]
-pub fn render_to_png_bytes(fig: JsValue, js_params: JsValue) -> Result<js_sys::Uint8Array, JsError> {
+pub fn render_to_png_bytes(
+    fig: JsValue,
+    js_params: JsValue,
+) -> Result<js_sys::Uint8Array, JsError> {
     use plotive_pxl::PxlRender;
 
     let fig: Figure = serde_wasm_bindgen::from_value(fig)
@@ -157,7 +163,9 @@ pub fn render_to_png_bytes(fig: JsValue, js_params: JsValue) -> Result<js_sys::U
         ..Default::default()
     };
 
-    let png_data = fig.to_png_data(&(), pxl_params).map_err(|e| js_err!("{}", e))?;
+    let png_data = fig
+        .to_png_data(&(), pxl_params)
+        .map_err(|e| js_err!("{}", e))?;
 
     Ok(js_sys::Uint8Array::from(&png_data[..]))
 }
@@ -199,4 +207,52 @@ pub fn render_to_svg(
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {
     let name = JsValue::from_str(prop);
     Reflect::get(obj, &name).ok().filter(|v| !v.is_undefined())
+}
+
+#[wasm_bindgen]
+pub fn parse_csv(csv: &str) -> Result<js_sys::Object, JsError> {
+    let data =
+        plotive::data::csv::parse_str(csv, Default::default()).map_err(|e| js_err!("{}", e))?;
+    let dict = js_sys::Object::new();
+    for col_name in data.heads() {
+        let col = data.column(col_name).unwrap();
+        if let Some(col) = col.time() {
+            let arr = js_sys::Array::new_with_length(col.len() as u32);
+            for (i, value) in col.time_iter().enumerate() {
+                let value = value
+                    .map(|t| t.to_string())
+                    .map(|s| JsValue::from_str(&s))
+                    .unwrap_or(JsValue::NULL);
+                arr.set(i as u32, value);
+            }
+            js_sys::Reflect::set(&dict, &JsValue::from_str(col_name), &arr)
+                .map_err(|e| js_err!("Failed to set property on object: {:?}", e))?;
+        }
+        else if let Some(col) = col.str() {
+            let arr = js_sys::Array::new_with_length(col.len() as u32);
+            for (i, value) in col.str_iter().enumerate() {
+                let value = value
+                    .map(|s| JsValue::from_str(s))
+                    .unwrap_or(JsValue::NULL);
+                arr.set(i as u32, value);
+            }
+            js_sys::Reflect::set(&dict, &JsValue::from_str(col_name), &arr)
+                .map_err(|e| js_err!("Failed to set property on object: {:?}", e))?;
+        }
+        else if let Some(col) = col.f64() {
+            // Use a plain JS array so serde_wasm_bindgen can deserialize it as a sequence.
+            let arr = js_sys::Array::new_with_length(col.len() as u32);
+            for (i, value) in col.f64_iter().enumerate() {
+                arr.set(i as u32, JsValue::from_f64(value.unwrap_or_default()));
+            }
+            js_sys::Reflect::set(&dict, &JsValue::from_str(col_name), &arr)
+                .map_err(|e| js_err!("Failed to set property on object: {:?}", e))?;
+        } else {
+            return Err(js_err!(
+                "Column '{}' has unsupported type for conversion to JS",
+                col_name
+            ).into());
+        }
+    }
+    Ok(dict)
 }

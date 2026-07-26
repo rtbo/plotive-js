@@ -1,4 +1,4 @@
-use plotive::{data, des, text, utils};
+use plotive::{data, des, utils};
 
 mod common;
 

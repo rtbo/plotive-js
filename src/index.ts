@@ -6,13 +6,17 @@ import {
     ThemeStroke,
 } from "./style";
 import { Series } from "./series";
+import type { DataCol } from "./series";
 import { Annotation } from "./annot";
 import { Axis, TicksLocator } from "./axis";
 import { getWasmApi } from "./wasm-api";
 
 export { BUILTIN_STYLES } from "./style";
 export type { LerpMethod, ColorMap, BuiltinLerpCmap, LiteralColorMap, CatColorMap } from "./cmap";
-export type { Series } from "./series";
+export type { DataCol, Series } from "./series";
+export type { Axis } from "./axis";
+export type { Annotation } from "./annot";
+export type { Color, Css4Color, XkcdColor } from "./color";
 export type { BuiltinStyleName, Style, Theme, Palette } from "./style";
 
 export type FontWeight =
@@ -274,4 +278,9 @@ export async function renderToCanvas(
         params.fontdb = loadedFonts;
     }
     await wasm.render_to_canvas(fig, canvas, params);
+}
+
+export async function parseCsv(csv: string): Promise<Record<string, DataCol>> {
+    const wasm = await getWasmApi();
+    return wasm.parse_csv(csv);
 }

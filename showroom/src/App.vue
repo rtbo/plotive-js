@@ -20,6 +20,11 @@ import multipleAxesTsCode from "./figs/multiple-axes.ts?raw";
 import multipleAxesRsCode from "./figs/multiple-axes.rs?raw";
 import multipleAxesPyCode from "./figs/multiple-axes.py?raw";
 
+import bcFigure from "./figs/bitcoin.ts";
+import bcTsCode from "./figs/bitcoin.ts?raw";
+import bcRsCode from "./figs/bitcoin.rs?raw";
+import bcPyCode from "./figs/bitcoin.py?raw";
+
 import irisFigure from "./figs/iris.ts";
 import irisTsCode from "./figs/iris.ts?raw";
 import irisRsCode from "./figs/iris.rs?raw";
@@ -30,10 +35,15 @@ import subplotsTsCode from "./figs/subplots.ts?raw";
 import subplotsRsCode from "./figs/subplots.rs?raw";
 import subplotsPyCode from "./figs/subplots.py?raw";
 
-import cmapFigure from "./figs/colormap.ts";
-import cmapCode from "./figs/colormap.ts?raw";
-import bodeFigure from "./figs/bode-rlc.ts";
-import bodeCode from "./figs/bode-rlc.ts?raw";
+import colormapFigure from "./figs/colormap.ts";
+import colormapTsCode from "./figs/colormap.ts?raw";
+import colormapRsCode from "./figs/colormap.rs?raw";
+import colormapPyCode from "./figs/colormap.py?raw";
+
+import bodeRlcFigure from "./figs/bode-rlc.ts";
+import bodeRlcTsCode from "./figs/bode-rlc.ts?raw";
+import bodeRlcRsCode from "./figs/bode-rlc.rs?raw";
+import bodeRlcPyCode from "./figs/bode-rlc.py?raw";
 
 import { useSettingsStore } from "./stores/settings.ts";
 import { computed } from "vue";
@@ -108,102 +118,70 @@ function formatExponential(value: number) {
 
 <template>
     <div class="min-h-screen">
-        <header
-            class="app-header sticky top-0 z-50 border-b border-surface-200 shadow-sm backdrop-blur"
-        >
+        <header class="app-header sticky top-0 z-50 border-b border-surface-200 shadow-sm backdrop-blur">
             <div class="app-header__overlay" aria-hidden="true"></div>
-            <div
-                class="relative mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8"
-            >
+            <div class="relative mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
                 <h1 class="text-xl font-semibold tracking-tight">
                     Plotive examples
                 </h1>
-                <div
-                    class="flex flex-wrap items-center justify-end gap-2 sm:gap-3"
-                >
+                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
                     <Select v-model="currentTheme" :options="themes" />
-                    <SelectButton
-                        v-model="settings.renderer"
-                        :options="['PNG', 'Canvas', 'SVG']"
-                    />
-                    <SelectButton
-                        v-model="darkMode"
-                        :options="['light', 'dark']"
-                    />
+                    <SelectButton v-model="settings.renderer" :options="['PNG', 'Canvas', 'SVG']" />
+                    <SelectButton v-model="darkMode" :options="['light', 'dark']" />
                 </div>
             </div>
         </header>
 
-        <main
-            class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8"
-        >
-            <Example
-                name="Simple Line Plot"
-                :figure-fn="sineFigure"
-                :ts-code="sineTsCode"
-                :rs-code="sineRsCode"
-                :py-code="sinePyCode"
-            />
-            <Example
-                name="Scatter Plot"
-                :figure-fn="scatterFigure"
-                :ts-code="scatterTsCode"
-                :rs-code="scatterRsCode"
-                :py-code="scatterPyCode"
-            />
-            <Example
-                name="Multiple Axes"
-                :figure-fn="multipleAxesFigure"
-                :ts-code="multipleAxesTsCode"
-                :rs-code="multipleAxesRsCode"
-                :py-code="multipleAxesPyCode"
-            />
-            <Example
-                name="Iris DataSet"
-                :figure-fn="irisFigure"
-                :ts-code="irisTsCode"
-                :rs-code="irisRsCode"
-                :py-code="irisPyCode"
-            />
-            <Example
-                name="Subplots with shared axis"
-                :figure-fn="subplotsFigure"
-                :ts-code="subplotsTsCode"
-                :rs-code="subplotsRsCode"
-                :py-code="subplotsPyCode"
-            />
-            <!-- <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :figure-code="multipleAxesCode" />
-      <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :figure-code="subplotsCode" />
-      <Example name="Scatter Plot" :figure-fn="irisFigure" :figure-code="irisCode" />
-      <Example name="Colormap and Colorbar" :figure-fn="cmapFigure" :figure-code="cmapCode" />
-      <Example name="Reactive Annotated Bode Plot" :figure-fn="bodeFigure" :figure-code="bodeCode">
-        <div class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-4 px-2 py-2 sm:px-3">
-          <label class="text-sm font-medium">R1</label>
-          <Slider v-model="R1Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1) }}
-            Ω</span>
+        <main class="mx-auto flex w-full flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+            <Example name="Simple Line Plot" :figure-fn="sineFigure" :ts-code="sineTsCode" :rs-code="sineRsCode"
+                :py-code="sinePyCode" />
+            <Example name="Scatter Plot" :figure-fn="scatterFigure" :ts-code="scatterTsCode" :rs-code="scatterRsCode"
+                :py-code="scatterPyCode" />
+            <Example name="Multiple Axes" :figure-fn="multipleAxesFigure" :ts-code="multipleAxesTsCode"
+                :rs-code="multipleAxesRsCode" :py-code="multipleAxesPyCode" />
+            <Example name="Time Series" :figure-fn="bcFigure" :ts-code="bcTsCode" :rs-code="bcRsCode"
+                :py-code="bcPyCode" />
+            <Example name="Iris DataSet" :figure-fn="irisFigure" :ts-code="irisTsCode" :rs-code="irisRsCode"
+                :py-code="irisPyCode" />
+            <Example name="Subplots with shared axis" :figure-fn="subplotsFigure" :ts-code="subplotsTsCode"
+                :rs-code="subplotsRsCode" :py-code="subplotsPyCode" />
+            <Example name="Colormap and Colorbar" :figure-fn="colormapFigure" :ts-code="colormapTsCode"
+                :rs-code="colormapRsCode" :py-code="colormapPyCode" />
+            <Example name="Reactive Annotated Bode Plot" :figure-fn="bodeRlcFigure" :ts-code="bodeRlcTsCode"
+                :rs-code="bodeRlcRsCode" :py-code="bodeRlcPyCode">
+                <div
+                    class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-4 px-2 py-2 sm:px-3">
+                    <label class="text-sm font-medium">R1</label>
+                    <Slider v-model="R1Log" :min="-1" :max="2" :step="0.01" class="w-full" />
+                    <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R1, 1)
+                        }}
+                        Ω</span>
 
-          <label class="text-sm font-medium">R2</label>
-          <Slider v-model="R2Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1) }}
-            Ω</span>
+                    <label class="text-sm font-medium">R2</label>
+                    <Slider v-model="R2Log" :min="-1" :max="2" :step="0.01" class="w-full" />
+                    <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R2, 1)
+                        }}
+                        Ω</span>
 
-          <label class="text-sm font-medium">R3</label>
-          <Slider v-model="R3Log" :min="-1" :max="2" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1) }}
-            Ω</span>
+                    <label class="text-sm font-medium">R3</label>
+                    <Slider v-model="R3Log" :min="-1" :max="2" :step="0.01" class="w-full" />
+                    <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatValue(bodeRlcStore.R3, 1)
+                        }}
+                        Ω</span>
 
-          <label class="text-sm font-medium">C</label>
-          <Slider v-model="CLog" :min="-7" :max="-5" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.C) }}
-            F</span>
+                    <label class="text-sm font-medium">C</label>
+                    <Slider v-model="CLog" :min="-7" :max="-5" :step="0.01" class="w-full" />
+                    <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{
+                        formatExponential(bodeRlcStore.C) }}
+                        F</span>
 
-          <label class="text-sm font-medium">L</label>
-          <Slider v-model="LLog" :min="-5" :max="-3" :step="0.01" class="w-full" />
-          <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{ formatExponential(bodeRlcStore.L) }}
-            H</span>
-        </div>
-      </Example> -->
+                    <label class="text-sm font-medium">L</label>
+                    <Slider v-model="LLog" :min="-5" :max="-3" :step="0.01" class="w-full" />
+                    <span class="min-w-22 text-right text-sm tabular-nums opacity-80">{{
+                        formatExponential(bodeRlcStore.L) }}
+                        H</span>
+                </div>
+            </Example>
         </main>
     </div>
 </template>
@@ -217,11 +195,9 @@ function formatExponential(value: number) {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: color-mix(
-        in srgb,
-        var(--p-content-background) 70%,
-        transparent
-    );
+    background: color-mix(in srgb,
+            var(--p-content-background) 70%,
+            transparent);
     pointer-events: none;
 }
 </style>
