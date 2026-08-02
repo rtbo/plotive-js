@@ -28,11 +28,6 @@
         "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
         "prepublishOnly": "pnpm run build",
         "pack:check": "pnpm run build && npm pack --dry-run",
-        "showroom:install": "pnpm --dir showroom install",
-        "showroom:dev": "pnpm run build:web && pnpm run showroom:install && pnpm --dir showroom run dev",
-        "showroom:devProd": "pnpm run build:prod && pnpm run showroom:install && pnpm --dir showroom run dev",
-        "showroom:prod": "pnpm run build:prod && pnpm run showroom:install && pnpm --dir showroom run build",
-        "showroom:deploy": "pnpm run showroom:prod && cd showroom && node scripts/deploy.mjs",
         "examples:custom-font": "pnpm run build:node && node examples/custom_font.mts"
     },
     "main": "./dist/node/cjs/index.cjs",
