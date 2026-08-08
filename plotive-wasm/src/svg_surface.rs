@@ -21,9 +21,11 @@ impl SvgSurface {
                 .owner_document()
                 .expect("svg element has no owner document")
         };
+        
+
         let defs = create_svg_element::<web_sys::Element>(&owner_doc, "defs");
-        doc.append_child(defs.as_ref())
-            .expect("failed to append defs to svg");
+        // clear any existing children of the defs element, in case it was reused
+        doc.replace_children_with_node_1(defs.as_ref());
 
         // Keep IDs unique across the whole HTML document to avoid clip-path collisions.
         let id_prefix = format!(

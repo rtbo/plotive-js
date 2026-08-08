@@ -204,6 +204,27 @@ pub fn render_to_svg(
     Ok(())
 }
 
+#[wasm_bindgen]
+pub fn render_to_svg_string(fig: JsValue, js_params: JsValue) -> Result<String, JsError> {
+    let fig: Figure = serde_wasm_bindgen::from_value(fig)
+        .map_err(|e| js_err!("Failed to deserialize figure: {}", e))?;
+    let params = extract_params(&js_params)?;
+
+    let size = fig.size();
+    let witdth = size.width() as u32;
+    let height = size.height() as u32;
+
+    let mut surface = plotive_svg::SvgSurface::new(witdth, height);
+
+    fig.draw(&(), params.fontdb.as_ref(), &mut surface, &params.style)
+        .map_err(|e| js_err!("Failed to draw figure: {}", e))?;
+    let mut result = Vec::new();
+    surface
+        .write(&mut result)
+        .map_err(|e| js_err!("Failed to write SVG to buffer: {}", e))?;
+    Ok(String::from_utf8(result).map_err(|e| js_err!("Failed to convert SVG to string: {}", e))?)
+}
+
 fn get_prop_if_defined(obj: &JsValue, prop: &str) -> Option<JsValue> {
     let name = JsValue::from_str(prop);
     Reflect::get(obj, &name).ok().filter(|v| !v.is_undefined())
@@ -227,19 +248,15 @@ pub fn parse_csv(csv: &str) -> Result<js_sys::Object, JsError> {
             }
             js_sys::Reflect::set(&dict, &JsValue::from_str(col_name), &arr)
                 .map_err(|e| js_err!("Failed to set property on object: {:?}", e))?;
-        }
-        else if let Some(col) = col.str() {
+        } else if let Some(col) = col.str() {
             let arr = js_sys::Array::new_with_length(col.len() as u32);
             for (i, value) in col.str_iter().enumerate() {
-                let value = value
-                    .map(|s| JsValue::from_str(s))
-                    .unwrap_or(JsValue::NULL);
+                let value = value.map(|s| JsValue::from_str(s)).unwrap_or(JsValue::NULL);
                 arr.set(i as u32, value);
             }
             js_sys::Reflect::set(&dict, &JsValue::from_str(col_name), &arr)
                 .map_err(|e| js_err!("Failed to set property on object: {:?}", e))?;
-        }
-        else if let Some(col) = col.f64() {
+        } else if let Some(col) = col.f64() {
             // Use a plain JS array so serde_wasm_bindgen can deserialize it as a sequence.
             let arr = js_sys::Array::new_with_length(col.len() as u32);
             for (i, value) in col.f64_iter().enumerate() {
@@ -251,7 +268,8 @@ pub fn parse_csv(csv: &str) -> Result<js_sys::Object, JsError> {
             return Err(js_err!(
                 "Column '{}' has unsupported type for conversion to JS",
                 col_name
-            ).into());
+            )
+            .into());
         }
     }
     Ok(dict)

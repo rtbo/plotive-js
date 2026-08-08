@@ -12,6 +12,7 @@ export type WasmApi = {
         params?: Params,
     ) => void;
     render_to_svg: (fig: Figure, svg: SVGElement, params?: Params) => void;
+    render_to_svg_string: (fig: Figure, params?: Params) => string;
     parse_csv: (csv: string) => Record<string, DataCol>;
     set_panic_hook: () => void;
 };

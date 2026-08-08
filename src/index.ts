@@ -197,19 +197,22 @@ export async function renderToSvgString(
     fig: Figure,
     params?: Params,
 ): Promise<string> {
-    if (
-        typeof document === "undefined" ||
-        typeof XMLSerializer === "undefined"
-    ) {
-        throw new Error("renderToSvgString requires a DOM environment.");
+    if (typeof document !== "undefined" && typeof XMLSerializer !== "undefined") {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        if (params?.fontdb) {
+            const loadedFonts = await loadFontDb(params.fontdb);
+            params.fontdb = loadedFonts;
+        }
+        await renderToSvg(svg, fig, params);
+        return new XMLSerializer().serializeToString(svg);
+    } else {
+        const wasm = await getWasmApi();
+        if (params?.fontdb) {
+            const loadedFonts = await loadFontDb(params.fontdb);
+            params.fontdb = loadedFonts;
+        }
+        return wasm.render_to_svg_string(fig, params); 
     }
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    if (params?.fontdb) {
-        const loadedFonts = await loadFontDb(params.fontdb);
-        params.fontdb = loadedFonts;
-    }
-    await renderToSvg(svg, fig, params);
-    return new XMLSerializer().serializeToString(svg);
 }
 
 export async function renderToPngDataUrl(
@@ -241,8 +244,16 @@ export async function renderAsSvg(
     fig: Figure,
     params?: Params,
 ): Promise<void> {
-    const svg = await renderToSvgString(fig, params);
-    elem.innerHTML = svg;
+    if (typeof document === "undefined") {
+        throw new Error("renderAsSvg requires a DOM environment.");
+    }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    if (params?.fontdb) {
+        const loadedFonts = await loadFontDb(params.fontdb);
+        params.fontdb = loadedFonts;
+    }
+    await renderToSvg(svg, fig, params);
+    elem.replaceChildren(svg);
 }
 
 export async function renderToSvg(

@@ -29,6 +29,7 @@ plotive = { version = "0.6.0", features = [
     "time",
 ] }
 plotive-pxl = { version = "0.6.0" }
+plotive-svg = { version = "0.6.0" }
 plotive-text = { version = "0.6.0" }
 serde-wasm-bindgen = "0.6.5"
 wasm-bindgen = "0.2.84"
