@@ -43,6 +43,7 @@ export type ScatterSeries = SeriesBase & {
     colors?: DataCol;
     cmap?: ColorMap;
     marker?: SeriesMarker;
+    colorCatsToLegend?: boolean;
 };
 
 export type AreaSeries = SeriesBase & {
