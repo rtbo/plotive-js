@@ -26,8 +26,8 @@
         "build:web": "pnpm run clean && pnpm run build:wasm:web && pnpm run build:ts:web && pnpm run build:ts:types",
         "build:node": "pnpm run clean && pnpm run build:wasm:node && pnpm run build:ts:node-esm && pnpm run build:ts:types",
         "build:prod": "pnpm run clean && pnpm run build:wasm:prod && pnpm run build:ts:all",
-        "prepublishOnly": "pnpm run build",
-        "pack:check": "pnpm run build && npm pack --dry-run",
+        "prepublishOnly": "pnpm run build:prod",
+        "pack:check": "pnpm run build:prod && npm pack --dry-run",
         "examples:custom-font": "pnpm run build:node && node examples/custom_font.mts"
     },
     "main": "./dist/node/cjs/index.cjs",
