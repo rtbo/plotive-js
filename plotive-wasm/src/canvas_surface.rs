@@ -15,7 +15,10 @@ impl CanvasSurface {
             .unwrap()
             .dyn_into::<web_sys::CanvasRenderingContext2d>()
             .unwrap();
-        Self { canvas, ctx: context }
+        Self {
+            canvas,
+            ctx: context,
+        }
     }
 
     fn set_fill_style(&mut self, paint: &render::Paint) {
@@ -23,7 +26,11 @@ impl CanvasSurface {
             render::Paint::Solid(color) => {
                 self.ctx.set_fill_style_str(&color.html());
             }
-            render::Paint::LinearGradient { start_pos, end_pos, stops } => {
+            render::Paint::LinearGradient {
+                start_pos,
+                end_pos,
+                stops,
+            } => {
                 let gradient = self.ctx.create_linear_gradient(
                     start_pos.x as f64,
                     start_pos.y as f64,
@@ -59,9 +66,18 @@ impl CanvasSurface {
                 self.ctx.set_line_dash(&dash_array).unwrap();
             }
         }
+        match stroke.cap {
+            render::LineCap::Butt => self.ctx.set_line_cap("butt"),
+            render::LineCap::Round => self.ctx.set_line_cap("round"),
+            render::LineCap::Square => self.ctx.set_line_cap("square"),
+        }
+        match stroke.join {
+            render::LineJoin::Miter => self.ctx.set_line_join("miter"),
+            render::LineJoin::Round => self.ctx.set_line_join("round"),
+            render::LineJoin::Bevel => self.ctx.set_line_join("bevel"),
+        }
     }
 }
-
 
 impl render::Surface for CanvasSurface {
     fn caps(&self) -> render::SurfaceCaps {
@@ -70,31 +86,40 @@ impl render::Surface for CanvasSurface {
         }
     }
 
-    fn prepare(&mut self, size: geom::Size) {
+    fn prepare(&mut self, size: geom::Size, fill: Option<render::Paint>) {
         self.canvas.set_width(size.width() as u32);
         self.canvas.set_height(size.height() as u32);
         self.ctx.reset();
-    }
-
-    fn fill(&mut self, fill: render::Paint) {
-        self.ctx.save();
-        self.ctx.rect(0.0, 0.0, self.canvas.width() as f64, self.canvas.height() as f64);
-        self.set_fill_style(&fill);
-        self.ctx.fill();
-        self.ctx.restore();
+        if let Some(fill) = fill {
+            self.ctx.save();
+            self.ctx.rect(
+                0.0,
+                0.0,
+                self.canvas.width() as f64,
+                self.canvas.height() as f64,
+            );
+            self.set_fill_style(&fill);
+            self.ctx.fill();
+            self.ctx.restore();
+        }
     }
 
     fn draw_path(&mut self, path: &render::Path) {
         self.ctx.save();
-        if let Some(geom::Transform{sx, kx, ky, sy, tx, ty}) = path.transform {
-            self.ctx.set_transform(
-                *sx as f64,
-                *ky as f64,
-                *kx as f64,
-                *sy as f64,
-                *tx as f64,
-                *ty as f64,
-            ).unwrap();
+        if let Some(geom::Transform {
+            sx,
+            kx,
+            ky,
+            sy,
+            tx,
+            ty,
+        }) = path.transform
+        {
+            self.ctx
+                .set_transform(
+                    *sx as f64, *ky as f64, *kx as f64, *sy as f64, *tx as f64, *ty as f64,
+                )
+                .unwrap();
         }
         self.ctx.begin_path();
         for seg in path.path.segments() {
@@ -131,18 +156,28 @@ impl render::Surface for CanvasSurface {
 
     fn push_clip(&mut self, clip: &render::Clip) {
         self.ctx.save();
-        if let Some(geom::Transform{sx, kx, ky, sy, tx, ty}) = clip.transform {
-            self.ctx.set_transform(
-                *sx as f64,
-                *ky as f64,
-                *kx as f64,
-                *sy as f64,
-                *tx as f64,
-                *ty as f64,
-            ).unwrap();
+        if let Some(geom::Transform {
+            sx,
+            kx,
+            ky,
+            sy,
+            tx,
+            ty,
+        }) = clip.transform
+        {
+            self.ctx
+                .set_transform(
+                    *sx as f64, *ky as f64, *kx as f64, *sy as f64, *tx as f64, *ty as f64,
+                )
+                .unwrap();
         }
         let rect = clip.rect;
-        self.ctx.rect(rect.x() as f64, rect.y() as f64, rect.width() as f64, rect.height() as f64);
+        self.ctx.rect(
+            rect.x() as f64,
+            rect.y() as f64,
+            rect.width() as f64,
+            rect.height() as f64,
+        );
         self.ctx.clip();
     }
 

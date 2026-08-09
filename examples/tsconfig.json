@@ -1,11 +1,11 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "rootDir": ".",
+        "types": ["node"],
+        "noEmit": true
     },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+    "include": ["./**/*.ts", "custom_font.mts"]
 }

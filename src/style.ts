@@ -1,6 +1,7 @@
 import { Color } from "./color";
 
-export type ThemePaletteColor = "background" | "foreground" | "grid" | "legend-border" | "legend-fill";
+export type ThemePaletteColor =
+    "background" | "foreground" | "grid" | "legend-border" | "legend-fill";
 export type ThemeColor = Color | ThemePaletteColor;
 
 export type SeriesPaletteColor = "auto" | number;
@@ -14,11 +15,30 @@ export interface ThemePalette {
     legendFill?: Color;
 }
 
-export type Theme = "light" | "dark" | "catppuccin-mocha" | "catppuccin-macchiato" | "catppuccin-frappe" | "catppuccin-latte" | ThemePalette;
+export type Theme =
+    | "light"
+    | "dark"
+    | "catppuccin-mocha"
+    | "catppuccin-macchiato"
+    | "catppuccin-frappe"
+    | "catppuccin-latte"
+    | "dracula"
+    | "alucard"
+    | ThemePalette;
 
-export type Palette = "black" | "standard" | "pastel" | "tol-bright" | "okabe-ito" |
-    "catppuccin-mocha" | "catppuccin-macchiato" | "catppuccin-frappe" | "catppuccin-latte" |
-    Color[];
+export type Palette =
+    | "black"
+    | "standard"
+    | "pastel"
+    | "tol-bright"
+    | "okabe-ito"
+    | "catppuccin-mocha"
+    | "catppuccin-macchiato"
+    | "catppuccin-frappe"
+    | "catppuccin-latte"
+    | "dracula"
+    | "alucard"
+    | Color[];
 
 export interface Style {
     theme: Theme;
@@ -28,65 +48,77 @@ export interface Style {
 export const BLACK_WHITE: Style = {
     theme: "light",
     palette: "black",
-}
+};
 export const LIGHT: Style = {
     theme: "light",
     palette: "standard",
-}
+};
 export const DARK: Style = {
     theme: "dark",
     palette: "pastel",
-}
+};
 export const TOL_BRIGHT: Style = {
     theme: "light",
     palette: "tol-bright",
-}
+};
 export const OKABE_ITO: Style = {
     theme: "light",
     palette: "okabe-ito",
-}
+};
 export const CATPPUCCIN_MOCHA: Style = {
     theme: "catppuccin-mocha",
     palette: "catppuccin-mocha",
-}
+};
 export const CATPPUCCIN_MACCHIATO: Style = {
     theme: "catppuccin-macchiato",
     palette: "catppuccin-macchiato",
-}
+};
 export const CATPPUCCIN_FRAPPE: Style = {
     theme: "catppuccin-frappe",
     palette: "catppuccin-frappe",
-}
+};
 export const CATPPUCCIN_LATTE: Style = {
     theme: "catppuccin-latte",
     palette: "catppuccin-latte",
-}
+};
+export const DRACULA: Style = {
+    theme: "dracula",
+    palette: "dracula",
+};
+export const ALUCARD: Style = {
+    theme: "alucard",
+    palette: "alucard",
+};
 export const DEFAULT = LIGHT;
 
 export const BUILTIN_STYLES = {
     "black-white": BLACK_WHITE,
-    "light": LIGHT,
-    "dark": DARK,
+    light: LIGHT,
+    dark: DARK,
     "tol-bright": TOL_BRIGHT,
     "okabe-ito": OKABE_ITO,
     "catppuccin-mocha": CATPPUCCIN_MOCHA,
     "catppuccin-macchiato": CATPPUCCIN_MACCHIATO,
     "catppuccin-frappe": CATPPUCCIN_FRAPPE,
     "catppuccin-latte": CATPPUCCIN_LATTE,
-}
+    dracula: DRACULA,
+    alucard: ALUCARD,
+};
 export type BuiltinStyleName = keyof typeof BUILTIN_STYLES;
 
 export interface Fill<C = Color> {
     color: C;
     opacity?: number;
-};
+}
 export type ThemeFill = Fill<ThemeColor>;
 export type SeriesFill = Fill<SeriesColor>;
+
+export type Pattern = "solid" | "dashed" | "dotted" | "dash-dot" | number[];
 
 export interface Stroke<C = Color> {
     color: C;
     width?: number;
-    pattern?: number[];
+    pattern?: Pattern;
     opacity?: number;
 }
 
@@ -94,7 +126,15 @@ export type ThemeStroke = Stroke<ThemeColor>;
 export type SeriesStroke = Stroke<SeriesColor>;
 
 export type MarkerShape =
-    "circle" | "square" | "diamond" | "cross" | "plus" | "triangle-up" | "triangle-down" | "triangle-left" | "triangle-right";
+    | "circle"
+    | "square"
+    | "diamond"
+    | "cross"
+    | "plus"
+    | "triangle-up"
+    | "triangle-down"
+    | "triangle-left"
+    | "triangle-right";
 
 export interface Marker<C = Color> {
     size?: number;

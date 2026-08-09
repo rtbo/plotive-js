@@ -1,10 +1,15 @@
-
 import * as axis from "./axis";
 import { ColorMap } from "./cmap";
-import { Marker, SeriesColor, SeriesFill, SeriesMarker, SeriesStroke } from "./style";
+import {
+    Marker,
+    SeriesColor,
+    SeriesFill,
+    SeriesMarker,
+    SeriesStroke,
+} from "./style";
 
 export type DataCol =
-    string | Float32Array | Float64Array | number[] | string[];
+    string | number[] | string[];
 
 interface SeriesBase {
     name?: string;
@@ -13,12 +18,12 @@ interface SeriesBase {
 }
 
 export type Interpolation =
-    "default" |
-    "linear" |
-    "step-early" |
-    "step-middle" |
-    "step-late" |
-    "spline";
+    | "default"
+    | "linear"
+    | "step-early"
+    | "step-middle"
+    | "step-late"
+    | "spline";
 
 export type LineSeries = SeriesBase & {
     type: "line";
@@ -28,7 +33,7 @@ export type LineSeries = SeriesBase & {
     interp?: Interpolation;
     marker?: Marker;
     style?: string;
-}
+};
 
 export type ScatterSeries = SeriesBase & {
     type: "scatter";
@@ -38,7 +43,8 @@ export type ScatterSeries = SeriesBase & {
     colors?: DataCol;
     cmap?: ColorMap;
     marker?: SeriesMarker;
-}
+    colorCatsToLegend?: boolean;
+};
 
 export type AreaSeries = SeriesBase & {
     type: "area";
@@ -50,7 +56,7 @@ export type AreaSeries = SeriesBase & {
     y2Stroke?: SeriesStroke;
     y1Interp?: Interpolation;
     y2Interp?: Interpolation;
-}
+};
 
 export type HistogramSeries = SeriesBase & {
     type: "hist";
@@ -59,7 +65,7 @@ export type HistogramSeries = SeriesBase & {
     stroke?: SeriesStroke;
     bins?: number;
     density?: boolean;
-}
+};
 
 export interface BarsPosition {
     offset?: number;
@@ -73,7 +79,7 @@ export type BarsSeries = SeriesBase & {
     fill?: SeriesFill;
     stroke?: SeriesStroke;
     position?: BarsPosition | [number, number];
-}
+};
 
-export type Series = LineSeries | ScatterSeries | AreaSeries | HistogramSeries | BarsSeries;
-
+export type Series =
+    LineSeries | ScatterSeries | AreaSeries | HistogramSeries | BarsSeries;

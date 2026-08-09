@@ -21,9 +21,11 @@ impl SvgSurface {
                 .owner_document()
                 .expect("svg element has no owner document")
         };
+        
+
         let defs = create_svg_element::<web_sys::Element>(&owner_doc, "defs");
-        doc.append_child(defs.as_ref())
-            .expect("failed to append defs to svg");
+        // clear any existing children of the defs element, in case it was reused
+        doc.replace_children_with_node_1(defs.as_ref());
 
         // Keep IDs unique across the whole HTML document to avoid clip-path collisions.
         let id_prefix = format!(
@@ -49,7 +51,7 @@ impl Surface for SvgSurface {
     }
 
     /// Prepare the surface for drawing, with the given width and height in plot units
-    fn prepare(&mut self, size: geom::Size) {
+    fn prepare(&mut self, size: geom::Size, fill: Option<render::Paint>) {
         set_attr(
             self.doc.as_ref(),
             "viewBox",
@@ -58,26 +60,14 @@ impl Surface for SvgSurface {
         set_attr(self.doc.as_ref(), "width", size.width());
         set_attr(self.doc.as_ref(), "height", size.height());
         set_attr(self.doc.as_ref(), "xmlns", SVG_NS);
-    }
-
-    /// Fill the entire surface with the given color
-    fn fill(&mut self, fill: render::Paint) {
-        let doc = self.owner_document();
-        let node = create_svg_element::<web_sys::SvgRectElement>(&doc, "rect");
-        set_attr(node.as_ref(), "width", "100%");
-        set_attr(node.as_ref(), "height", "100%");
-        match fill {
-            render::Paint::Solid(color) => set_attr(node.as_ref(), "fill", color.html()),
-            render::Paint::LinearGradient {
-                start_pos,
-                end_pos,
-                stops,
-            } => {
-                let grad_id = self.add_linear_gradient(&doc, start_pos, end_pos, &stops);
-                set_attr(node.as_ref(), "fill", format!("url(#{})", grad_id));
-            }
+        if let Some(fill) = fill {
+            let doc = self.owner_document();
+            let node = create_svg_element::<web_sys::SvgRectElement>(&doc, "rect");
+            set_attr(node.as_ref(), "width", "100%");
+            set_attr(node.as_ref(), "height", "100%");
+            self.assign_fill(node.as_ref(), Some(&fill));
+            self.append_node(&node);
         }
-        self.append_node(&node);
     }
 
     /// Draw a rectangle
@@ -219,6 +209,16 @@ impl SvgSurface {
                         .join(" ");
                     set_attr(node, "stroke-dasharray", dasharray);
                 }
+            }
+            match stroke.cap {
+                render::LineCap::Butt => set_attr(node, "stroke-linecap", "butt"),
+                render::LineCap::Round => set_attr(node, "stroke-linecap", "round"),
+                render::LineCap::Square => set_attr(node, "stroke-linecap", "square"),
+            }
+            match stroke.join {
+                render::LineJoin::Miter => set_attr(node, "stroke-linejoin", "miter"),
+                render::LineJoin::Round => set_attr(node, "stroke-linejoin", "round"),
+                render::LineJoin::Bevel => set_attr(node, "stroke-linejoin", "bevel"),
             }
         } else {
             set_attr(node, "stroke", "none");

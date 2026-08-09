@@ -2,6 +2,10 @@
 
 A JavaScript library for creating charts and data visualizations. Plotive is a set of JavaScript bindings for the [plotive](https://github.com/rtbo/plotive) project written in Rust.
 
+Checkout the [showroom](https://rtbo.github.io/plotive) !
+
+You may also be interested in the [Python bindings](https://pypi.org/project/plotive/).
+
 ## Features
 
 - 📊 Create charts and data visualizations
@@ -22,50 +26,52 @@ or with pnpm:
 pnpm add plotive
 ```
 
+## Example
+
 ## Usage
 
 ### In the Browser
 
 ```typescript
-import { renderAsSvg } from 'plotive';
+import { renderAsSvg } from "plotive";
 
-const x = Array.from({ length: 100 }, (_, i) => i / 99 * 2 * Math.PI);
-const y = x.map(x => Math.sin(x));
+const x = Array.from({ length: 100 }, (_, i) => (i / 99) * 2 * Math.PI);
+const y = x.map((x) => Math.sin(x));
 
 const fig = {
-  plot: {
-    series: [
-      {
-        type: "line",
-        x: x,
-        y: y,
-      },
-    ]
-  }
+    plot: {
+        series: [
+            {
+                type: "line",
+                x: x,
+                y: y,
+            },
+        ],
+    },
 };
 
-const container = document.getElementById('chart-container');
+const container = document.getElementById("chart-container");
 await renderAsSvg(fig, container);
 ```
 
 ### In Node.js
 
 ```javascript
-import { renderToSvgString } from 'plotive';
+import { renderToSvgString } from "plotive";
 
-const x = Array.from({ length: 100 }, (_, i) => i / 99 * 2 * Math.PI);
-const y = x.map(x => Math.sin(x));
+const x = Array.from({ length: 100 }, (_, i) => (i / 99) * 2 * Math.PI);
+const y = x.map((x) => Math.sin(x));
 
 const fig = {
-  plot: {
-    series: [
-      {
-        type: "line",
-        x: x,
-        y: y,
-      },
-    ]
-  }
+    plot: {
+        series: [
+            {
+                type: "line",
+                x: x,
+                y: y,
+            },
+        ],
+    },
 };
 
 const svgString = await renderToSvgString(fig);
@@ -79,7 +85,7 @@ console.log(svgString);
 Renders a figure as SVG and inserts it into a DOM element.
 
 ```typescript
-await renderAsSvg(fig, document.getElementById('chart'));
+await renderAsSvg(fig, document.getElementById("chart"));
 ```
 
 ### `renderToSvgString(figure)`
@@ -95,7 +101,7 @@ const svg = await renderToSvgString(fig);
 Renders a figure as PNG and assigns it to an image element.
 
 ```typescript
-await renderToImg(fig, document.querySelector('img'));
+await renderToImg(fig, document.querySelector("img"));
 ```
 
 ### `renderToPngDataUrl(figure)`
@@ -112,112 +118,112 @@ img.src = dataUrl;
 ### Basic Example: Sine Wave
 
 ```typescript
-import { renderAsSvg } from 'plotive';
+import { renderAsSvg } from "plotive";
 
-const x = Array.from({ length: 500 }, (_, i) => i / 499 * 2 * Math.PI);
-const y = x.map(x => Math.sin(x));
+const x = Array.from({ length: 500 }, (_, i) => (i / 499) * 2 * Math.PI);
+const y = x.map((x) => Math.sin(x));
 
 const fig = {
-  title: "Sine Wave",
-  plot: {
-    series: [
-      {
-        type: "line",
-        x: x,
-        y: y,
-      },
-    ]
-  }
+    title: "Sine Wave",
+    plot: {
+        series: [
+            {
+                type: "line",
+                x: x,
+                y: y,
+            },
+        ],
+    },
 };
 
-await renderAsSvg(fig, document.getElementById('chart'));
+await renderAsSvg(fig, document.getElementById("chart"));
 ```
 
 ### Advanced Example: Multiple Y-Axes
 
 ```typescript
-import { renderAsSvg } from 'plotive';
+import { renderAsSvg } from "plotive";
 
-const x = Array.from({ length: 500 }, (_, i) => i / 499 * Math.PI);
-const y1 = x.map(x => 1000 * Math.sin(x));
-const y2 = x.map(x => Math.sin(x) - 0.8 * Math.sin(x) ** 2);
+const x = Array.from({ length: 500 }, (_, i) => (i / 499) * Math.PI);
+const y1 = x.map((x) => 1000 * Math.sin(x));
+const y2 = x.map((x) => Math.sin(x) - 0.8 * Math.sin(x) ** 2);
 
 const fig = {
-  title: "Example with Multiple Y-Axes",
-  legend: { pos: 'top' },
-  plot: {
-    series: [
-      {
-        type: "line",
-        name: "1000 * sin(x)",
-        x: x,
-        y: y1,
-        yAxis: 0,
-      },
-      {
-        type: "line",
-        name: "sin(x) - 0.8*sin(x)²",
-        x: x,
-        y: y2,
-        yAxis: 1,
-      }
-    ],
-    xAxis: {
-      title: "X",
-      ticks: "pimultiple",
+    title: "Example with Multiple Y-Axes",
+    legend: { pos: "top" },
+    plot: {
+        series: [
+            {
+                type: "line",
+                name: "1000 * sin(x)",
+                x: x,
+                y: y1,
+                yAxis: 0,
+            },
+            {
+                type: "line",
+                name: "sin(x) - 0.8*sin(x)²",
+                x: x,
+                y: y2,
+                yAxis: 1,
+            },
+        ],
+        xAxis: {
+            title: "X",
+            ticks: "pimultiple",
+        },
+        yAxes: [
+            {
+                title: "Y1",
+                ticks: "auto",
+            },
+            {
+                title: "Y2",
+                side: "right",
+                ticks: "percent",
+            },
+        ],
     },
-    yAxes: [
-      {
-        title: "Y1",
-        ticks: "auto",
-      },
-      {
-        title: "Y2",
-        side: "right",
-        ticks: "percent",
-      }
-    ],
-  },
 };
 
-await renderAsSvg(fig, document.getElementById('chart'));
+await renderAsSvg(fig, document.getElementById("chart"));
 ```
 
 ## Figure Structure
 
 ```typescript
 interface Figure {
-  // Chart configuration
-  size?: [number, number];           // Dimensions [width, height]
-  title?: string;                     // Figure title
-  padding?: number | [number, number] | [number, number, number, number];
-  fill?: ThemeFill;                   // Background color
-  legend?: FigLegend;                 // Legend configuration
-  
-  // Content
-  plot?: Plot;                        // Single plot
-  plots?: Plot[];                     // Multiple plots
+    // Chart configuration
+    size?: [number, number]; // Dimensions [width, height]
+    title?: string; // Figure title
+    padding?: number | [number, number] | [number, number, number, number];
+    fill?: ThemeFill; // Background color
+    legend?: FigLegend; // Legend configuration
+
+    // Content
+    plot?: Plot; // Single plot
+    plots?: Plot[]; // Multiple plots
 }
 
 interface Plot {
-  series: Series[];                   // Data series
-  title?: string;                     // Plot title
-  xAxis?: Axis;                      // X axis
-  xAxes?: Axis[];                    // Multiple X axes
-  yAxis?: Axis;                      // Y axis
-  yAxes?: Axis[];                    // Multiple Y axes
-  legend?: PlotLegend;                // Plot legend
-  annotations?: Annotation[];         // Annotations
-  subplot?: [number, number];         // Subplot position
+    series: Series[]; // Data series
+    title?: string; // Plot title
+    xAxis?: Axis; // X axis
+    xAxes?: Axis[]; // Multiple X axes
+    yAxis?: Axis; // Y axis
+    yAxes?: Axis[]; // Multiple Y axes
+    legend?: PlotLegend; // Plot legend
+    annotations?: Annotation[]; // Annotations
+    subplot?: [number, number]; // Subplot position
 }
 
 interface Series {
-  type: "line" | "scatter";           // Series type
-  x: number[];                        // X data
-  y: number[];                        // Y data
-  name?: string;                      // Series name
-  yAxis?: number;                    // Y axis index
-  // ... other style options
+    type: "line" | "scatter"; // Series type
+    x: number[]; // X data
+    y: number[]; // Y data
+    name?: string; // Series name
+    yAxis?: number; // Y axis index
+    // ... other style options
 }
 ```
 
