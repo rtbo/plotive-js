@@ -33,8 +33,8 @@ jobs:
 
       - name: Fix npmrc for OIDC
         run: |
-          npmrc=${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}
-          sed -i '/_authToken/d' "$npmrc"
+          NPMRC=${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}
+          sed -i '/_authToken/d' "$NPMRC"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
