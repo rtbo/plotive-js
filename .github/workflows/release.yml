@@ -51,10 +51,7 @@ jobs:
         run: pnpm run build:prod
 
       - name: Publish to npm
-        run: |
-          # remove _authToken so npm uses OIDC instead of an empty token
-          sed -i '/_authToken/d' ~/.npmrc
-          npm publish --access public --provenance
+        run: npm publish --access public --provenance
 
   deploy-docs:
     runs-on: ubuntu-latest
